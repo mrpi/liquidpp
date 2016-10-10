@@ -3,6 +3,7 @@
 #include <string>
 #include <vector>
 #include <sstream>
+#include <memory>
 
 #include <boost/variant/recursive_variant.hpp>
 #include <boost/variant/get.hpp>
