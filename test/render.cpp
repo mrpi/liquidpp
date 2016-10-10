@@ -4,6 +4,9 @@
 
 #include <boost/variant/get.hpp>
 
+#include <boost/property_tree/ptree.hpp>
+#include <boost/property_tree/xml_parser.hpp>
+
 namespace RenderUnitTest
 {
   constexpr const char* TestTags = "[render]";
@@ -83,5 +86,30 @@ namespace RenderUnitTest
      REQUIRE("a: 23" == render("a: {{a}}"));
      REQUIRE("b: 42" == render("b: {{ b }}"));
      REQUIRE("c: " == render("c: {{  c  }}"));
+  }
+
+  TEST_CASE("render boost::property_tree::ptree", TestTags)
+  {
+     liquidpp::Context c;
+     
+     boost::property_tree::ptree tree;
+     std::istringstream iss(R"(
+<debug>
+    <filename>debug.log</filename>
+    <modules>
+        <module>Finance</module>
+        <module>Admin</module>
+        <module>HR</module>
+    </modules>
+    <level>2</level>
+</debug>)");
+     boost::property_tree::read_xml(iss, tree);
+     c.setAnonymous(tree);
+     
+     auto render = [&](auto&& str) { return liquidpp::parse(str)(c); };
+     REQUIRE("debugFilename: debug.log" == render("debugFilename: {{debug.filename}}"));
+     REQUIRE("debugLevel: 2" == render("debugLevel: {{debug.level}}"));
+     // TODO; Array
+     //REQUIRE("module[0]: Finance" == render("module[0]: {{debug.modules.module}}"));
   }
 }

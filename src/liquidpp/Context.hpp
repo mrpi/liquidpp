@@ -8,6 +8,7 @@
 #include <boost/variant/recursive_variant.hpp>
 #include <boost/optional.hpp>
 #include <boost/lexical_cast.hpp>
+#include <boost/property_tree/ptree_fwd.hpp>
 
 namespace liquidpp
 {
@@ -61,6 +62,19 @@ namespace liquidpp
              if (idx < vec.size())
                 return toValue(vec[idx]);
              return Value{};
+          };
+       }
+    };
+    
+    template<>
+    struct ValueConverter<boost::property_tree::ptree> : public std::true_type
+    {
+       template<typename T>
+       static auto get(T&& propTree)
+       {
+          return [propTree = std::forward<T>(propTree)](const std::string& name) -> Value
+          {
+             return propTree.template get_optional<std::string>(name);
           };
        }
     };
