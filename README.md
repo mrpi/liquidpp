@@ -26,3 +26,5 @@ Requirements
 Status
 -----
 This software is an early alpha state, has only limited test coverage and misses many features of the original Liquid Markup Language.
+
+- on Travis-CI: [![Travis Build Status](https://travis-ci.org/mrpi/liquidpp.svg?branch=master)](https://travis-ci.org/mrpi/liquidpp)
