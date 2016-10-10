@@ -7,7 +7,7 @@ Usage
 ```C++
 liquidpp::Context c;
 c.set("name", "Donald Drumpf");
-auto rendered = liquidpp::parse("Hello {{name}}!")(c));
+auto rendered = liquidpp::parse("Hello {{name}}!")(c);
 REQUIRE("Hello Donald Drumpf!" == rendered);
 ```
 
