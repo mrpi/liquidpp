@@ -1,15 +1,19 @@
-language: cpp
+language:
+    - cpp
 
 compiler:
-- clang
-- gcc
+    - clang
+    - gcc
+
+install:
+    - sudo apt-get install libboost-dev
 
 os:
-- linux
+    - linux
 
-before_script:  
-    - mkdir build
-    - cd build
+script:
+    - mkdir _builds
+    - cd _builds
     - cmake ..
-
-script: make && ctest
+    - make
+    - ctest
