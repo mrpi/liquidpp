@@ -134,10 +134,6 @@ namespace liquidpp
           auto parts = splitEntry(name);
           if (parts.second.empty())
           {
-             std::string x;
-             name < x;
-             x < name;
-             
             auto itr = mValues.find(name);
             if (itr != mValues.end() && itr->second.which() == 0)
                return boost::get<std::string>(itr->second);
