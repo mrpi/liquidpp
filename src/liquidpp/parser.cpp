@@ -150,7 +150,6 @@ namespace liquidpp
              }
           }
 
-          static_assert(std::is_nothrow_move_constructible<Node>::value, "Expecting node to be movable");
           res.nodeList.push_back(std::move(node));
        }
        
