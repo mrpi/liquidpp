@@ -13,7 +13,6 @@ matrix:
           sources:
             - ubuntu-toolchain-r-test
             - llvm-toolchain-precise
-            - libboost-dev
 
     # Test gcc-6: C++11/14/1z, Build=Debug/Release, ASAN=Off
     - env: GCC_VERSION=6 BUILD_TYPE=Debug CPP=14 ASAN=Off LIBCXX=Off
@@ -23,7 +22,7 @@ matrix:
           packages:
             - g++-6
             - valgrind
-            - libboost1.58-dev
+            - libboost-dev
           sources:
             - ubuntu-toolchain-r-test            
             

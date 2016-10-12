@@ -34,8 +34,6 @@ else (LIQUIDPP_HAVE_STD_STRING_VIEW)
    set(LIQUIDPP_STRING_VIEW_CLASS boost::string_view)
 endif (LIQUIDPP_HAVE_STD_STRING_VIEW)
 
-#
-
 add_subdirectory (src) 
 
 enable_testing()
