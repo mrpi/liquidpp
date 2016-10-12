@@ -9,6 +9,7 @@ matrix:
             - util-linux
             - clang-4.0
             - valgrind
+            - libboost1.58-dev
           sources:
             - ubuntu-toolchain-r-test
             - llvm-toolchain-precise
@@ -22,9 +23,9 @@ matrix:
           packages:
             - g++-6
             - valgrind
+            - libboost1.58-dev
           sources:
             - ubuntu-toolchain-r-test            
-            - libboost1.58-dev
             
 script:
     - mkdir _builds
