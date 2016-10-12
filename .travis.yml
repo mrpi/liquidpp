@@ -1,21 +1,29 @@
 language: cpp
-addons:
-  apt:
-    sources:
-    - boost-latest
-    - ubuntu-toolchain-r-test
-    packages:
-    - clang-3.8
-    - g++-5
-    - libboost1.58-dev
-matrix:
-  include:
-    - os: linux
-      compiler: clang-3.8
-      env: CXXFLAGS="-pedantic -Werror"
-    - os: linux
-      compiler: gcc-5
 
+matrix:
+    - env: CLANG_VERSION=4.0 BUILD_TYPE=Debug CPP=14 ASAN=On LIBCXX=On
+      os: linux
+      addons: &clang40
+        apt:
+          packages:
+            - util-linux
+            - clang-4.0
+            - valgrind
+          sources:
+            - ubuntu-toolchain-r-test
+            - llvm-toolchain-precise
+
+    # Test gcc-6: C++11/14/1z, Build=Debug/Release, ASAN=Off
+    - env: GCC_VERSION=6 BUILD_TYPE=Debug CPP=14 ASAN=Off LIBCXX=Off
+      os: linux
+      addons: &gcc6
+        apt:
+          packages:
+            - g++-6
+            - valgrind
+          sources:
+            - ubuntu-toolchain-r-test            
+            
 script:
     - mkdir _builds
     - cd _builds
