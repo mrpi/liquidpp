@@ -1,24 +1,20 @@
-language: generic
+language: cpp
+addons:
+  apt:
+    sources:
+    - boost-latest
+    - ubuntu-toolchain-r-test
+    packages:
+    - libstdc++-4.8-dev
+    - g++-5
+    - libboost1.62-dev
 matrix:
   include:
     - os: linux
-      env: GCC_VERSION=5 LIBCXX=Off
-      addons: &gcc5
-        apt:
-          packages:
-            - g++-5
-            - libboost-dev
-          sources: &sources
-            - llvm-toolchain-precise-3.8
-            - ubuntu-toolchain-r-test
+      compiler: clang
+      env: CXXFLAGS="-pedantic -Werror"
     - os: linux
-      env: COMPILER_NAME=clang CXX=clang++-3.8 CC=clang-3.8 LIBCXX=On
-      addons:
-        apt:
-          packages:
-            - clang-3.8
-            - libboost-dev
-          sources: *sources
+      compiler: gcc-5
 
 script:
     - mkdir _builds
