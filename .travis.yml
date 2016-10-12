@@ -16,7 +16,7 @@ addons:
     - libboost1.55-all-dev
 
 compiler:
-    - g++
+    - g++-5
 
 script:
     - mkdir _builds
