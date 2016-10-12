@@ -9,7 +9,7 @@ include_directories(${Boost_INCLUDE_DIRS})
 set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_STANDARD_REQUIRED on)
 
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++1z")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14")
 
 check_include_file_cxx(string_view LIQUIDPP_HAVE_STD_STRING_VIEW) 
 check_include_file_cxx(experimental/string_view LIQUIDPP_HAVE_STD_EXPERIMENTAL_STRING_VIEW) 
