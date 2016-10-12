@@ -5,13 +5,13 @@ addons:
     - boost-latest
     - ubuntu-toolchain-r-test
     packages:
-    - libstdc++-4.8-dev
+    - clang-3.8
     - g++-5
-    - libboost1.62-dev
+    - libboost1.58-dev
 matrix:
   include:
     - os: linux
-      compiler: clang
+      compiler: clang-3.8
       env: CXXFLAGS="-pedantic -Werror"
     - os: linux
       compiler: gcc-5
