@@ -6,14 +6,17 @@
 #include <map>
 
 #include <boost/variant/recursive_variant.hpp>
+#include <boost/variant/get.hpp>
 #include <boost/optional.hpp>
 #include <boost/lexical_cast.hpp>
 #include <boost/property_tree/ptree_fwd.hpp>
 
+#include "config.h"
+
 namespace liquidpp
 {
     using Value = boost::optional<std::string>;
-    using ValueGetter = std::function<Value(const std::string&)>;
+    using ValueGetter = std::function<Value(string_view)>;
 
     template<typename T>
     struct ValueConverter : public std::false_type
@@ -34,21 +37,32 @@ namespace liquidpp
        return ValueConverter<T>::get(value);
     }
     
-    template<typename Key, typename ValueT>
-    struct ValueConverter<std::map<Key, ValueT>> : public std::true_type
+    namespace impl
     {
-       template<typename T>
-       static auto get(T&& map)
+       template<typename KeyT, typename ValueT>
+       struct AssociativeContainerConverter : public std::true_type
        {
-          return [map = std::forward<T>(map)](const std::string& name) -> Value
-          {
-             auto itr = map.find(boost::lexical_cast<Key>(name));
-             if (itr != map.end())
-                return toValue(itr->second);
-              return Value{};
-          };
-       }
-    };
+         template<typename T>
+         static auto get(T&& map)
+         {
+            return [map = std::forward<T>(map)](string_view name) -> Value
+            {
+               auto itr = map.find(boost::lexical_cast<KeyT>(name));
+               if (itr != map.end())
+                  return toValue(itr->second);
+               return Value{};
+            };
+         }
+       };       
+    }
+    
+    template<typename KeyT, typename ValueT>
+    struct ValueConverter<std::map<KeyT, ValueT>> : public impl::AssociativeContainerConverter<KeyT, ValueT>
+    {};
+    
+    template<typename KeyT, typename ValueT>
+    struct ValueConverter<std::unordered_map<KeyT, ValueT>> : public impl::AssociativeContainerConverter<KeyT, ValueT>
+    {};
     
     template<typename ValueT>
     struct ValueConverter<std::vector<ValueT>> : public std::true_type
@@ -56,7 +70,7 @@ namespace liquidpp
        template<typename T>
        static auto get(T&& vec)
        {
-          return [vec = std::forward<T>(vec)](const std::string& name) -> Value
+          return [vec = std::forward<T>(vec)](string_view name) -> Value
           {
              auto idx = boost::lexical_cast<size_t>(name);
              if (idx < vec.size())
@@ -72,9 +86,9 @@ namespace liquidpp
        template<typename T>
        static auto get(T&& propTree)
        {
-          return [propTree = std::forward<T>(propTree)](const std::string& name) -> Value
+          return [propTree = std::forward<T>(propTree)](string_view name) -> Value
           {
-             return propTree.template get_optional<std::string>(name);
+             return propTree.template get_optional<std::string>(name.to_string());
           };
        }
     };
@@ -84,7 +98,8 @@ namespace liquidpp
     private:
        const Context* mParent{nullptr};
        using MapValue = boost::variant<std::string, ValueGetter>;
-       std::unordered_map<std::string, MapValue> mValues;
+       using StorageT = std::map<std::string, MapValue, std::less<void>>;
+       StorageT mValues;
        ValueGetter mAnonymous;
        
     public:
@@ -95,7 +110,12 @@ namespace liquidpp
        {          
        }
        
-       static std::pair<std::string, std::string> splitEntry(const std::string& name)
+       Context(std::initializer_list<StorageT::value_type> entries)
+        : mValues(entries)
+       {
+       }
+       
+       static std::pair<string_view, string_view> splitEntry(string_view name)
        {
           auto sepPos = name.find('.');
           if (sepPos != std::string::npos)
@@ -106,15 +126,19 @@ namespace liquidpp
           if (sepPos != std::string::npos && sepPos1 != std::string::npos && sepPos < sepPos1)
              return {name.substr(0, sepPos), name.substr(sepPos+1, sepPos1-sepPos-1)};
           
-          return {name, std::string{}};
+          return {name, string_view{}};
        }
        
-       Value get(const std::string& name) const
+       Value get(string_view name) const
        {
           auto parts = splitEntry(name);
           if (parts.second.empty())
           {
-            auto itr = mValues.find(parts.first);
+             std::string x;
+             name < x;
+             x < name;
+             
+            auto itr = mValues.find(name);
             if (itr != mValues.end() && itr->second.which() == 0)
                return boost::get<std::string>(itr->second);
           }

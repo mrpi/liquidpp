@@ -8,6 +8,7 @@
 #include <boost/variant/recursive_variant.hpp>
 #include <boost/variant/get.hpp>
 
+#include "config.h"
 #include "IRenderable.hpp"
 
 namespace liquidpp
@@ -33,11 +34,11 @@ namespace liquidpp
           return os << "{{" << obj.leftPadding << obj.variableName << obj.filters << "}}";
        }
        
-       void render(Context& context, std::ostream& os) const override final
+       void render(Context& context, std::string& out) const override final
        {
           auto&& val = context.get(variableName);
           if (val)
-             os << *val;
+             out += *val;
        }
     };
 
@@ -69,7 +70,7 @@ namespace liquidpp
     
     struct UnevaluatedTag : public Tag
     {
-       void render(Context& context, std::ostream& os) const override final
+       void render(Context& context, std::string& out) const override final
        {
           // TODO: assert? or throw?
        }
@@ -144,7 +145,7 @@ namespace liquidpp
     
     struct Comment : public Block
     {
-       void render(Context& context, std::ostream& os) const override final
+       void render(Context& context, std::string& res) const override final
        {
        }
     };
@@ -155,7 +156,7 @@ namespace liquidpp
        
        std::string operator()(const Context& context) const
        {
-          std::ostringstream oss;
+          std::string res;
           Context mutableScopedContext{&context};
                     
           for(auto&& node : root.nodeList)
@@ -165,25 +166,26 @@ namespace liquidpp
              {
                 case NodeType::String:
                 {
-                   auto& str = boost::get<std::string>(node);
-                   oss.write(str.data(), str.size());
+                   res += boost::get<std::string>(node);
                    break;
                 }
                 case NodeType::Variable:
                 {
-                   boost::get<Variable>(node).render(mutableScopedContext, oss);
+                   boost::get<Variable>(node).render(mutableScopedContext, res);
                    break;
                 }
                 case NodeType::Comment:
                 {
                    auto& renderable = *boost::get<std::shared_ptr<const IRenderable>>(node);
-                   renderable.render(mutableScopedContext, oss);
+                   renderable.render(mutableScopedContext, res);
                    break;
                 }
+                case NodeType::UnevaluatedTag:
+                   break;
              }
           }
           
-          return oss.str();
+          return res;
        }
     };
     

@@ -14,6 +14,6 @@ namespace liquidpp
        virtual ~IRenderable()
        {}
        
-       virtual void render(Context& context, std::ostream& os) const = 0;
+       virtual void render(Context& context, std::string& out) const = 0;
     };
 }

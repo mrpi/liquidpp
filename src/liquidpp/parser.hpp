@@ -1,9 +1,10 @@
 #pragma once
 
+#include "config.h"
 #include "template.hpp"
 
 namespace liquidpp
 {
-   Template parse(const std::string& content);
+   Template parse(string_view content);
 }
 

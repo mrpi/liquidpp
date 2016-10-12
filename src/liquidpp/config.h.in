@@ -1,0 +1,8 @@
+#pragma once
+
+#include @LIQUIDPP_STRING_VIEW_HEADER@
+
+namespace liquidpp
+{
+   using string_view = @LIQUIDPP_STRING_VIEW_CLASS@;
+}

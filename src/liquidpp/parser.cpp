@@ -12,6 +12,7 @@
 
 #include <iostream>
 #include <fstream>
+#include <type_traits>
 
 // We need to tell fusion about our Template struct
 // to make it a first-class fusion citizen
@@ -47,19 +48,37 @@ namespace liquidpp
       : qi::grammar<Iterator, BlockBody()>
     {
         LiquidGrammer(std::ostream& errorOut)
+          : LiquidGrammer()
+        {
+            using qi::on_error;
+            using qi::fail;
+            using namespace qi::labels;
+
+            using phoenix::construct;
+            using phoenix::val;
+            
+            on_error<fail>
+            (
+                blockBody
+              , errorOut
+                    << val("Error! Expecting ")
+                    << _4                               // what failed?
+                    << val(" here: \"")
+                    << construct<std::string>(_3, _2)   // iterators to error-pos, end
+                    << val("\"")
+            );
+           
+        }
+        
+        LiquidGrammer()
           : LiquidGrammer::base_type(blockBody, "blockBody")
         {
             using qi::lit;
             using qi::lexeme;
             using qi::raw;
             using qi::eps;
-            using qi::on_error;
-            using qi::fail;
             using ascii::char_;
-            using namespace qi::labels;
 
-            using phoenix::construct;
-            using phoenix::val;
             using phoenix::push_back;
 
             text %= raw[+(char_ - "{{" - "{%")];
@@ -84,17 +103,6 @@ namespace liquidpp
             tag.name("tag");
             node.name("node");
             blockBody.name("blockBody");
-
-            on_error<fail>
-            (
-                blockBody
-              , errorOut
-                    << val("Error! Expecting ")
-                    << _4                               // what failed?
-                    << val(" here: \"")
-                    << construct<std::string>(_3, _2)   // iterators to error-pos, end
-                    << val("\"")
-            );
         }
 
         qi::rule<Iterator, BlockBody()> blockBody;
@@ -119,6 +127,7 @@ namespace liquidpp
     BlockBody buildBlocks(Iterator& itr, const Iterator& end, const std::string& endTagName = "")
     {
        BlockBody res;
+       res.nodeList.reserve(end - itr);
        
        for(; itr != end; ++itr)
        {
@@ -141,6 +150,7 @@ namespace liquidpp
              }
           }
 
+          static_assert(std::is_nothrow_move_constructible<Node>::value, "Expecting node to be movable");
           res.nodeList.push_back(std::move(node));
        }
        
@@ -150,13 +160,12 @@ namespace liquidpp
        return res;
     }
 
-   Template parse(const std::string& content)
+   Template parse(string_view content)
    {
       liquidpp::Template ast;
       
-      std::ostringstream errorOut;
-      typedef liquidpp::LiquidGrammer<std::string::const_iterator> LiquidGrammer;
-      LiquidGrammer liquidGrammer{errorOut};
+      typedef liquidpp::LiquidGrammer<string_view::const_iterator> LiquidGrammer;
+      static const LiquidGrammer liquidGrammer;
 
       auto iter = content.begin();
       auto end = content.end();
@@ -164,7 +173,17 @@ namespace liquidpp
       BlockBody flatNodes;
       bool r = parse(iter, end, liquidGrammer, flatNodes);
       if (!r)
+      {
+         // We parse again with error message output
+         std::ostringstream errorOut;
+         LiquidGrammer liquidGrammer{errorOut};
+         auto iter = content.begin();
+         auto end = content.end();
+         
+         BlockBody flatNodes;
+         parse(iter, end, liquidGrammer, flatNodes);
          throw std::runtime_error("Parsing failed! " + errorOut.str());
+      }
       
       auto itr = flatNodes.nodeList.begin();
       ast.root = buildBlocks(itr, flatNodes.nodeList.end());

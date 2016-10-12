@@ -1,6 +1,6 @@
 #include "catch.hpp"
 
-#include <liquidpp/parser.hpp>
+#include <liquidpp.hpp>
 
 #include <boost/variant/get.hpp>
 
@@ -30,6 +30,12 @@ namespace RenderUnitTest
      c.set("name", "Donald Drumpf");
      
      REQUIRE("Hello Donald Drumpf!" == liquidpp::parse("Hello {{name}}!")(c));
+  }
+
+  TEST_CASE("render with inline context (initializer_list constructor)", TestTags)
+  {
+     auto rendered = liquidpp::parse("{{key1}} {{key2}}")({{"key1", "val1"}, {"key2", "val2"}});
+     REQUIRE("val1 val2" == rendered);
   }
 
   TEST_CASE("render text and integer variable", TestTags)
