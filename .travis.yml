@@ -1,22 +1,24 @@
 sudo: false
 
-language: cpp
+language: generic
 
 cache:
   apt: true
 
 addons:
-  apt:
-    sources:
-    - boost-latest
-    - ubuntu-toolchain-r-test
-    packages:
-    - gcc-5
-    - g++-5
-    - libboost1.55-all-dev
-
-compiler:
-    - g++-5
+matrix:
+  include:
+    - os: linux
+      env: COMPILER_NAME=gcc CXX=g++-6 CC=gcc-6
+      addons:
+        apt:
+          packages:
+            - gcc-6
+            - g++-6
+            - libboost1.55-all-dev
+          sources:
+            - boost-latest
+            - ubuntu-toolchain-r-test
 
 script:
     - mkdir _builds
