@@ -26,7 +26,7 @@ namespace liquidpp
       if (pos == std::string::npos)
       {
          res.name = path;
-         path.clear();
+         path = string_view{};
       }
       else
       {
