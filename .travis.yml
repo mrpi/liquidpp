@@ -13,8 +13,8 @@ matrix:
       addons:
         apt:
           packages:
-            - gcc-5
-            - g++-5
+            - gcc-6
+            - g++-6
             - libboost1.55-all-dev
           sources:
             - boost-latest
