@@ -17,10 +17,9 @@ matrix:
             - gcc-5
             - g++-5
             - libboost1.55-all-dev
-          sources:
+          sources: *sources
            - boost-latest
            - ubuntu-toolchain-r-test
-           - *sources
 
 script:
     - mkdir _builds
