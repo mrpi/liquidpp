@@ -20,6 +20,7 @@ matrix:
           sources:
            - boost-latest
            - ubuntu-toolchain-r-test
+           - *sources
 
 script:
     - mkdir _builds
