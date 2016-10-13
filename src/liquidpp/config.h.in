@@ -2,6 +2,8 @@
 
 #include @LIQUIDPP_STRING_VIEW_HEADER@
 
+#cmakedefine LIQUIDPP_HAVE_RAPIDJSON
+
 namespace liquidpp
 {
    using string_view = @LIQUIDPP_STRING_VIEW_CLASS@;

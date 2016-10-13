@@ -2,10 +2,17 @@
 
 #include <liquidpp.hpp>
 
+#ifdef LIQUIDPP_HAVE_RAPIDJSON
+#include <rapidjson/rapidjson.h>
+#include <rapidjson/document.h>
+#endif // LIQUIDPP_HAVE_RAPIDJSON
+
 #include <boost/variant/get.hpp>
 
 #include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/xml_parser.hpp>
+
+using namespace liquidpp::literals;
 
 namespace RenderUnitTest
 {
@@ -118,4 +125,49 @@ namespace RenderUnitTest
      // TODO; Array
      //REQUIRE("module[0]: Finance" == render("module[0]: {{debug.modules.module}}"));
   }
+
+#ifdef LIQUIDPP_HAVE_RAPIDJSON
+  TEST_CASE("render rapidjson::Document", TestTags)
+  {
+      rapidjson::Document jsonDoc;
+      jsonDoc.Parse(R"(
+         {
+            "title":"example glossary",
+            "GlossDiv":{
+               "title":"S",
+               "pi": 3.1416,
+               "GlossList":{
+                  "GlossEntry":{
+                     "ID":"SGML",
+                     "SortAs":"SGML",
+                     "GlossTerm":"Standard Generalized Markup Language",
+                     "Acronym":"SGML",
+                     "Abbrev":"ISO 8879:1986",
+                     "GlossDef":{
+                        "para":"A meta-markup language, used to create markup languages such as DocBook.",
+                        "GlossSeeAlso":[
+                           "GML",
+                           "XML"
+                        ]
+                     },
+                     "GlossSee":"markup"
+                  }
+               }
+            }
+         } )");
+
+      liquidpp::Context c;
+      
+      rapidjson::GenericValue<rapidjson::UTF8<>>& value = jsonDoc;
+      c.setAnonymous(jsonDoc);
+     
+      auto render = [&](auto&& str) { return liquidpp::parse(str)(c); };
+
+      REQUIRE(render("{{title}}") == "example glossary"_sv);
+      REQUIRE(render("{{GlossDiv.GlossList.GlossEntry.ID}}") == "SGML"_sv);
+      REQUIRE(render("{{GlossDiv.GlossList.GlossEntry.GlossDef.GlossSeeAlso[1]}}")
+              == "XML"_sv);
+      REQUIRE(render("{{GlossDiv.pi}}").substr(0, 4) == "3.14"_sv);
+  }
+#endif // LIQUIDPP_HAVE_RAPIDJSON
 }

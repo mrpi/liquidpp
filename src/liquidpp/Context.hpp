@@ -15,7 +15,7 @@
 #include "Key.hpp"
 #include "ValueConverter.hpp"
 
-#include "accessors/accessors.hpp"
+#include "accessors/Accessors.hpp"
 
 namespace liquidpp
 {   

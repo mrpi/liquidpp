@@ -15,6 +15,7 @@ check_include_file_cxx(string_view LIQUIDPP_HAVE_STD_STRING_VIEW)
 check_include_file_cxx(experimental/string_view LIQUIDPP_HAVE_STD_EXPERIMENTAL_STRING_VIEW) 
 check_include_file_cxx(boost/utility/string_view.hpp LIQUIDPP_HAVE_BOOST_STRING_VIEW) 
 check_include_file_cxx(nonius/nonius_single.h++ LIQUIDPP_HAVE_NONIUS)
+check_include_file_cxx(rapidjson/rapidjson.h LIQUIDPP_HAVE_RAPIDJSON)
 
 if (LIQUIDPP_HAVE_STD_STRING_VIEW)
    message("using std::string_view")
