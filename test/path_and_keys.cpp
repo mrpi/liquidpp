@@ -1,6 +1,6 @@
 #include "catch.hpp"
 
-#include <liquidpp.hpp>
+#include <liquidpp/Key.hpp>
 
 using namespace liquidpp::literals;
 
