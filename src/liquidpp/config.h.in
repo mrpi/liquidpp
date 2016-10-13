@@ -5,4 +5,13 @@
 namespace liquidpp
 {
    using string_view = @LIQUIDPP_STRING_VIEW_CLASS@;
+   
+   
+   namespace literals
+   {
+      constexpr string_view operator""_sv(const char* str, std::size_t len)
+      {
+         return string_view{str, len};
+      }
+   }
 }

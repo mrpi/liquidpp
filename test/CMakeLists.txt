@@ -8,6 +8,7 @@ file(DOWNLOAD https://raw.githubusercontent.com/philsquared/Catch/master/single_
 add_executable (liquidppTest
                 main.cpp
                 block_unit_test.cpp
+                path_and_keys.cpp
                 render.cpp)
                 
 

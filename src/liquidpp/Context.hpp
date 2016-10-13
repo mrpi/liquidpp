@@ -15,8 +15,48 @@
 
 namespace liquidpp
 {
-    using Value = boost::optional<std::string>;
-    using ValueGetter = std::function<Value(string_view)>;
+   using Value = boost::optional<std::string>;
+   using ValueGetter = std::function<Value(string_view)>;
+
+   struct Key
+   {
+      string_view name;
+      boost::optional<size_t> idx;
+
+      explicit operator bool() const
+      {
+         return !name.empty();
+      }
+   };
+
+   using Path = std::vector<Key>;
+
+   inline Key popKey(string_view& path)
+   {
+      Key res;
+
+      auto pos = path.find('.');
+      if (pos == std::string::npos)
+      {
+         res.name = path;
+         path.clear();
+      }
+      else
+      {
+         res.name = path.substr(0, pos);
+         path.remove_prefix(pos + 1);
+      }
+
+      auto idxStart = res.name.find('[');
+      if (idxStart != std::string::npos && res.name.back() == ']')
+      {
+         auto size = res.name.size();
+         res.idx = boost::lexical_cast<size_t>(res.name.substr(idxStart + 1, size - idxStart - 2));
+         res.name.remove_suffix(size - idxStart);
+      }
+
+      return res;
+   }
 
     template<typename T>
     struct ValueConverter : public std::false_type
@@ -115,45 +155,40 @@ namespace liquidpp
        {
        }
        
-       static std::pair<string_view, string_view> splitEntry(string_view name)
+       Value get(const string_view qualifiedPath) const
        {
-          auto sepPos = name.find('.');
-          if (sepPos != std::string::npos)
-             return {name.substr(0, sepPos), name.substr(sepPos+1)};
+          auto path = qualifiedPath;
+          auto key = popKey(path);
 
-          sepPos = name.find('[');
-          auto sepPos1 = name.find(']');
-          if (sepPos != std::string::npos && sepPos1 != std::string::npos && sepPos < sepPos1)
-             return {name.substr(0, sepPos), name.substr(sepPos+1, sepPos1-sepPos-1)};
-          
-          return {name, string_view{}};
-       }
-       
-       Value get(string_view name) const
-       {
-          auto parts = splitEntry(name);
-          if (parts.second.empty())
+          auto itr = mValues.find(key.name);
+          if (itr != mValues.end())
           {
-            auto itr = mValues.find(name);
-            if (itr != mValues.end() && itr->second.which() == 0)
-               return boost::get<std::string>(itr->second);
-          }
-          else
-          {
-             auto itr = mValues.find(parts.first);
-             if (itr != mValues.end() && itr->second.which() == 1)
-                return boost::get<ValueGetter>(itr->second)(parts.second);
+            if (key.idx)
+            {
+               if (itr->second.which() == 1)
+                  return boost::get<ValueGetter>(itr->second)(boost::lexical_cast<std::string>(*key.idx));
+            }
+            else if (path.empty())
+            {
+               if (itr->second.which() == 0)
+                  return boost::get<std::string>(itr->second);
+            }
+            else
+            {
+               if (itr->second.which() == 1)
+                  return boost::get<ValueGetter>(itr->second)(path);
+            }
           }
           
           if (mAnonymous)
           {
-             auto res = mAnonymous(name);
+             auto res = mAnonymous(qualifiedPath);
              if (res)
                 return res;
           }
 
           if (mParent)
-             return mParent->get(name);
+             return mParent->get(qualifiedPath);
           
           return Value{};             
        }
