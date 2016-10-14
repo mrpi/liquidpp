@@ -16,6 +16,7 @@ matrix:
             - gcc-6
             - g++-6
             - libboost1.55-all-dev
+            - rapidjson-dev
           sources:
             - boost-latest
             - ubuntu-toolchain-r-test
