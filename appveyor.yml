@@ -20,3 +20,10 @@ install:
   - C:\"Program Files (x86)"\"Microsoft Visual Studio 14.0"\VC\vcvarsall.bat
   - mkdir build && cd build
   - cmake ..
+
+build:
+  project: C:/projects/liquidpp/build/ALL_BUILD.vcxproj
+
+test_script:
+  - ctest
+  
