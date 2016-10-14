@@ -19,9 +19,10 @@ Features
 Requirements
 -----
 * cmake
-* C++14 compiler
+* C++14 compiler (GCC, CLANG or MSVC 2015)
 * STL and boost (lexical_cast, spirit, variant, optional)
 * CATCH Unit Test Framework (shipped)
+* C++17 string_view (std, std::experimental, boost or shipped)
 
 Status
 -----
