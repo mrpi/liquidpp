@@ -5,9 +5,8 @@ configuration:
   - Debug
 
 environment:
-  BOOST_ROOT: C:\Libraries\boost
-  BOOST_INCLUDEDIR: C:\Libraries\boost
-  BOOST_LIBRARYDIR: C:\Libraries\boost\lib64-msvc-14.0
+  BOOST_ROOT: C:\Libraries\boost_1_59_0
+  BOOST_LIBRARYDIR: C:\Libraries\boost_1_59_0\lib32-msvc-14.0
 
 os:
   - Visual Studio 2015
