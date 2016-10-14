@@ -1,9 +1,7 @@
 platform:
-  - x86
   - x64
 configuration:
   - Debug
-  - Release
 
 os:
   - Visual Studio 2015
@@ -14,7 +12,7 @@ build:
 
 install:
   - C:\"Program Files (x86)"\"Microsoft Visual Studio 14.0"\VC\vcvarsall.bat
-  - mkdir build && cd build
+  - mkdir build
 
 build_script:
 - cmake .. --build build
