@@ -5,13 +5,14 @@ configuration:
   - Debug
 
 environment:
-  BOOST_ROOT: C:\Libraries\boost_1_59_0
-  BOOST_LIBRARYDIR: C:\Libraries\boost_1_59_0\lib32-msvc-14.0
+#  BOOST_ROOT: C:\Libraries\boost_1_59_0
+#  BOOST_LIBRARYDIR: C:\Libraries\boost_1_59_0\lib32-msvc-14.0
 
 os:
   - Visual Studio 2015
 
 install:
+  - ps: nuget install boost -o "${env:APPVEYOR_BUILD_FOLDER}" -Version 1.60.0
   - C:\"Program Files (x86)"\"Microsoft Visual Studio 14.0"\VC\vcvarsall.bat
   - mkdir build && cd build
   - cmake ..
