@@ -19,12 +19,14 @@ Features
 Requirements
 -----
 * cmake
-* C++14 compiler
+* C++14 compiler (GCC, CLANG or MSVC 2015)
 * STL and boost (lexical_cast, spirit, variant, optional)
 * CATCH Unit Test Framework (shipped)
+* C++17 string_view (std, std::experimental, boost or shipped)
 
 Status
 -----
 This software is an early alpha state, has only limited test coverage and misses many features of the original Liquid Markup Language.
 
 - on Travis-CI: [![Travis Build Status](https://travis-ci.org/mrpi/liquidpp.svg?branch=master)](https://travis-ci.org/mrpi/liquidpp)
+- on AppVeyor: [![AppVeyor Build Status](https://ci.appveyor.com/api/projects/status/91g3twect2bacw3w/branch/master?svg=true)](https://ci.appveyor.com/project/mrpi/liquidpp)
