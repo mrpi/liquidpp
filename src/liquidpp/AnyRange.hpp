@@ -8,13 +8,28 @@ namespace liquidpp
    template<typename ValueType>
    class AnyRange
    {
+   private:
+      struct ImplBase()
+      {
+         virtual ~ImplBase()
+         {}
+         
+         virtual bool hasNext() = 0
+      
+         virtual ValueType next() = 0;
+      };
+      std::shared_ptr<ImplBase> mImpl;
+      
    public:
-      virtual ~AnyRange()
-      {}
+      bool hasNext()
+      {
+         return mImpl->hasNext();
+      }
       
-      virtual bool hasNext() = 0
-      
-      virtual ValueType next() = 0;
+      ValueType next()
+      {
+         return mImpl->next();
+      }
    };
    
    template<typename T, typename ValueType = decltype(*std::declval<T>.begin())>

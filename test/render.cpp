@@ -107,15 +107,15 @@ namespace RenderUnitTest
      
      boost::property_tree::ptree tree;
      std::istringstream iss(R"(
-<debug>
-    <filename>debug.log</filename>
-    <modules>
-        <module>Finance</module>
-        <module>Admin</module>
-        <module>HR</module>
-    </modules>
-    <level>2</level>
-</debug>)");
+         <debug>
+            <filename>debug.log</filename>
+            <modules>
+               <module>Finance</module>
+               <module>Admin</module>
+               <module>HR</module>
+            </modules>
+            <level>2</level>
+         </debug>)");
      boost::property_tree::read_xml(iss, tree);
      c.setAnonymous(tree);
      
@@ -157,8 +157,6 @@ namespace RenderUnitTest
          } )");
 
       liquidpp::Context c;
-      
-      rapidjson::GenericValue<rapidjson::UTF8<>>& value = jsonDoc;
       c.setAnonymous(jsonDoc);
      
       auto render = [&](auto&& str) { return liquidpp::parse(str)(c); };
