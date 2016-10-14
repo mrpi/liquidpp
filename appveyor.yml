@@ -14,7 +14,7 @@ build:
 
 install:
   - C:\"Program Files (x86)"\"Microsoft Visual Studio 14.0"\VC\vcvarsall.bat
-  -
+  - mkdir build && cd build
 
 build_script:
-- cmake --build build
+- cmake .. --build build
