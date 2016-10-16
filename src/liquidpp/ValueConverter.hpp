@@ -33,6 +33,18 @@ namespace liquidpp
       {
          return boost::get<std::string>(*this);
       }
+
+      bool operator==(ValueTag tag) const
+      {
+         if (*this)
+            return false;
+         return boost::get<ValueTag>(*this) == tag;
+      }
+
+      bool operator!=(ValueTag tag) const
+      {
+         return !(*this == tag);
+      }
    };
 
    using ValueGetter = std::function<Value(OptIndex, string_view)>;

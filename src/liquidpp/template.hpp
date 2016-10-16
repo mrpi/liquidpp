@@ -197,33 +197,43 @@ namespace liquidpp
           loopVariable = match[1].str();
           rangeVariable = match[2].str();
        }
-       
+
        void render(Context& context, std::string& res) const override final
        {
           auto val = context.get(rangeVariable);
-          if (val)
+          if (val || val == ValueTag::Object)
+          {
+             renderElement(context, res, val, rangeVariable);
              return;
+          }
 
-          if (boost::get<ValueTag>(val) != ValueTag::Range)
+          if (val != ValueTag::Range)
              return;
 
           size_t idx = 0;
-          Value currentVal;
           while (true) {
              std::string idxPath = rangeVariable + '[' + boost::lexical_cast<std::string>(idx++) + ']';
-             currentVal = context.get(idxPath);
-             Context loopVarContext{context};
-
-             if (currentVal)
-                loopVarContext.set(loopVariable, *currentVal);
-             else if (boost::get<ValueTag>(currentVal) != ValueTag::OutOfRange)
-                loopVarContext.setReference(loopVariable, idxPath);
-             else
+             if (!renderElement(context, res, context.get(idxPath), idxPath))
                 break;
-
-             for(auto&& node : body.nodeList)
-                renderNode(loopVarContext, node, res);
           }
+       }
+
+    private:
+       bool renderElement(Context& context, std::string& res, const Value& currentVal, string_view idxPath) const
+       {
+          Context loopVarContext{context};
+
+          if (currentVal)
+             loopVarContext.set(loopVariable, *currentVal);
+          else if (currentVal != ValueTag::OutOfRange)
+             loopVarContext.setReference(loopVariable, idxPath);
+          else
+             return false;
+
+          for(auto&& node : body.nodeList)
+             renderNode(loopVarContext, node, res);
+
+          return true;
        }
     };
 

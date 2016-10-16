@@ -23,14 +23,22 @@ TEST_CASE("parse for tag")
    REQUIRE(forTag->rangeVariable == "range");
 }
 
+TEST_CASE("for loop on single value")
+{
+   liquidpp::Context c;
+   c.set("range", "Drumpf");
+
+   auto rendered = liquidpp::render("{% for var in range%}{{var}} {%endfor%}", c);
+   REQUIRE(rendered == "Drumpf ");
+}
+
 TEST_CASE("for loop on std::vector<int>")
 {
    std::vector<int> v{1, 2, 23, 42};
    liquidpp::Context c;
    c.set("range", v);
 
-   auto templ = liquidpp::parse("{% for var in range%}{{var}} {%endfor%}");
-   auto rendered = templ(c);
+   auto rendered = liquidpp::render("{% for var in range%}{{var}} {%endfor%}", c);
    REQUIRE(rendered == "1 2 23 42 ");
 }
 

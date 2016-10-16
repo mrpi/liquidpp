@@ -54,7 +54,7 @@ public:
 
       if (mAnonymous) {
          auto res = mAnonymous(boost::none, qualifiedPath);
-         if (res || boost::get<ValueTag>(res) != ValueTag::Null)
+         if (res || res != ValueTag::Null)
             return res;
       }
 
