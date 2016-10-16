@@ -22,7 +22,43 @@ namespace liquidpp
    using ValueBase = boost::variant<std::string, ValueTag>;
    struct Value : public ValueBase
    {
-      using ValueBase::ValueBase;
+      Value() = default;
+      Value(const Value&) = default;
+      Value(Value&&) = default;
+      Value& operator=(const Value&) = default;
+      Value& operator=(Value&&) = default;
+
+      Value(ValueTag tag)
+       : ValueBase(tag)
+      {}
+
+      Value(const std::string& v)
+         : ValueBase(v)
+      {}
+
+      Value(std::string&& v)
+         : ValueBase(std::move(v))
+      {}
+
+      Value(const ValueBase& vb)
+         : ValueBase(vb)
+      {}
+
+      Value(ValueBase&& vb)
+         : ValueBase(std::move(vb))
+      {}
+
+      Value& operator=(const ValueBase& vb)
+      {
+         static_cast<ValueBase&>(*this) = vb;
+         return *this;
+      }
+
+      Value& operator=(ValueBase&& vb)
+      {
+         static_cast<ValueBase&>(*this) = std::move(vb);
+         return *this;
+      }
 
       explicit operator bool() const
       {
