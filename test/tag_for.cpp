@@ -34,15 +34,38 @@ TEST_CASE("for loop on std::vector<int>")
    REQUIRE(rendered == "1 2 23 42 ");
 }
 
+constexpr auto json = R"(
+      {
+         "a": [8, 6, 2],
+         "b": [{"subA": 1}, {"subA": 2, "subB": "foo"}, {"subB": 1}],
+         "c": "Hello"
+      })";
+
+TEST_CASE("for loop on boost::property_tree")
+{
+   boost::property_tree::ptree pt;
+   std::istringstream ss{json};
+   boost::property_tree::read_json(ss, pt);
+
+   liquidpp::Context c;
+   c.setAnonymous(pt);
+
+   SECTION("value array")
+   {
+      auto rendered = liquidpp::render("{% for var in a%}{{var}} {%endfor%}", c);
+      REQUIRE(rendered == "8 6 2 ");
+   }
+
+   SECTION("object array")
+   {
+      auto rendered = liquidpp::render("{% for var in b%}{{var.subA}}({{var.subB}}) {%endfor%}", c);
+      REQUIRE(rendered == "1() 2(foo) (1) ");
+   }
+}
+
 #ifdef LIQUIDPP_HAVE_RAPIDJSON
 TEST_CASE("for loop on rapidjson::Document")
 {
-   auto json = R"(
-      {
-         "a": [8, 6, 2],
-         "b": [{"subA": 1}, {"subA": 2, "subB": "foo"}, {"subB": 1}]
-      })";
-
    rapidjson::Document jsonDoc;
    jsonDoc.Parse(json);
 
@@ -51,15 +74,13 @@ TEST_CASE("for loop on rapidjson::Document")
 
    SECTION("value array")
    {
-      auto templ = liquidpp::parse("{% for var in a%}{{var}} {%endfor%}");
-      auto rendered = templ(c);
+      auto rendered = liquidpp::render("{% for var in a%}{{var}} {%endfor%}", c);
       REQUIRE(rendered == "8 6 2 ");
    }
 
    SECTION("object array")
    {
-      auto templ = liquidpp::parse("{% for var in b%}{{var.subA}}({{var.subB}}) {%endfor%}");
-      auto rendered = templ(c);
+      auto rendered = liquidpp::render("{% for var in b%}{{var.subA}}({{var.subB}}) {%endfor%}", c);
       REQUIRE(rendered == "1() 2(foo) (1) ");
    }
 }
