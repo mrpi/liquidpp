@@ -10,7 +10,7 @@ add_executable (liquidppTest
                 block_unit_test.cpp
                 path_and_keys.cpp
                 render.cpp
-                ranges.cpp)
+                ranges.cpp tag_for.cpp)
                 
 
 target_link_libraries (liquidppTest

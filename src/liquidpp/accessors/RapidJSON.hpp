@@ -26,7 +26,7 @@ struct ValueConverter<rapidjson::GenericValue<Encoding, Allocator>> : public std
    template<typename T>
    static auto get(T&& parent)
    {
-      return [&parent](string_view path) -> Value
+      return [&parent](OptIndex idx, string_view path) -> Value
       {
          using Value = rapidjson::GenericValue<Encoding, Allocator>;
          const Value* v = &parent;
@@ -35,21 +35,21 @@ struct ValueConverter<rapidjson::GenericValue<Encoding, Allocator>> : public std
          while (auto key = popKey(path))
          {
             if (!v->IsObject())
-               return boost::none;
+               return ValueTag::Null;
 
             // Workarround: rapidjson 0.12 requires '\0'-termination even when size is given
             std::string keyName{key.name.data(), key.name.size()};
             itr = v->FindMember(rapidjson::StringRef(keyName.c_str(), keyName.size()));
             if (itr == v->MemberEnd())
-               return boost::none;
+               return ValueTag::Null;
 
             v = &itr->value;
             if (key.idx)
             {
                if (!v->IsArray())
-                  return boost::none;
+                  return ValueTag::Null;
                if (*key.idx >= v->Size())
-                  return boost::none;
+                  return ValueTag::OutOfRange;
                v = &(*v)[*key.idx];
             }
          }
@@ -70,7 +70,12 @@ struct ValueConverter<rapidjson::GenericValue<Encoding, Allocator>> : public std
          }
          if (v->IsString())
             return std::string{v->GetString(), v->GetStringLength()};
-         return boost::none;
+
+         if (v->IsObject())
+            return ValueTag::Object;
+         if (v->IsArray())
+            return ValueTag::Range;
+         return ValueTag::Null;
       };
    }
 };

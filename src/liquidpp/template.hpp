@@ -4,6 +4,7 @@
 #include <vector>
 #include <sstream>
 #include <memory>
+#include <regex>
 
 #include <boost/variant/recursive_variant.hpp>
 #include <boost/variant/get.hpp>
@@ -41,10 +42,6 @@ namespace liquidpp
              out += *val;
        }
     };
-
-    struct Comment;
-    struct Conditional;
-    struct UnevaluatedTag;
     
     struct Tag : public IRenderable
     {
@@ -83,7 +80,7 @@ namespace liquidpp
        String = 0,
        Variable = 1,
        UnevaluatedTag = 2,
-       Comment = 3
+       Tag = 3
     };
         
    inline std::ostream& operator<<(std::ostream& os, NodeType t)
@@ -96,8 +93,8 @@ namespace liquidpp
          return os << "Variable";
       case NodeType::UnevaluatedTag:
          return os << "UnevaluatedTag";
-      case NodeType::Comment:
-         return os << "Comment";
+      case NodeType::Tag:
+         return os << "Tag";
       default:
          assert(false);
          return os << "<unknown>";
@@ -140,13 +137,93 @@ namespace liquidpp
     
     struct Block : public Tag
     {
+       Block(Tag&& tag)
+        : Tag(std::move(tag))
+       {}
+       
        BlockBody body;
     };
     
     struct Comment : public Block
     {
+       Comment(Tag&& tag)
+        : Block(std::move(tag))
+       {}
+       
+       void render(Context& /*context*/, std::string& /*res*/) const override final
+       {
+       }
+    };
+
+    inline void renderNode(Context& context, const Node& node, std::string& res)
+    {
+       // TODO: use static visitor
+       switch(type(node))
+       {
+          case NodeType::String:
+          {
+             res += boost::get<std::string>(node);
+             break;
+          }
+          case NodeType::Variable:
+          {
+             boost::get<Variable>(node).render(context, res);
+             break;
+          }
+          case NodeType::Tag:
+          {
+             auto& renderable = *boost::get<std::shared_ptr<const IRenderable>>(node);
+             renderable.render(context, res);
+             break;
+          }
+          case NodeType::UnevaluatedTag:
+             break;
+       }
+    }
+    
+    struct For : public Block
+    {
+       std::string loopVariable;
+       std::string rangeVariable;
+       
+       For(Tag&& tag)
+        : Block(std::move(tag))
+       {
+          std::regex rex{" *([^ ]+) +in +([^ ]+) *"};
+          std::smatch match;
+          if (!std::regex_match(value, match, rex))
+             throw std::invalid_argument("Malformed 'for' tag ('" + value + "')!");
+
+          loopVariable = match[1].str();
+          rangeVariable = match[2].str();
+       }
+       
        void render(Context& context, std::string& res) const override final
        {
+          auto val = context.get(rangeVariable);
+          if (val)
+             return;
+
+          if (boost::get<ValueTag>(val) != ValueTag::Range)
+             return;
+
+          size_t idx = 0;
+          Value currentVal;
+          while (true) {
+             std::string idxPath = rangeVariable + '[' + boost::lexical_cast<std::string>(idx++) + ']';
+             currentVal = context.get(idxPath);
+             Context loopVarContext{context};
+
+             if (currentVal)
+                loopVarContext.set(loopVariable, *currentVal);
+             else if (boost::get<ValueTag>(currentVal) != ValueTag::OutOfRange)
+                loopVarContext.setReference(loopVariable, idxPath);
+             else
+                break;
+
+             for(auto&& node : body.nodeList)
+                renderNode(loopVarContext, node, res);
+          }
        }
     };
 
@@ -160,54 +237,41 @@ namespace liquidpp
           Context mutableScopedContext{&context};
                     
           for(auto&& node : root.nodeList)
-          {
-             // TODO: use static visitor
-             switch(type(node))
-             {
-                case NodeType::String:
-                {
-                   res += boost::get<std::string>(node);
-                   break;
-                }
-                case NodeType::Variable:
-                {
-                   boost::get<Variable>(node).render(mutableScopedContext, res);
-                   break;
-                }
-                case NodeType::Comment:
-                {
-                   auto& renderable = *boost::get<std::shared_ptr<const IRenderable>>(node);
-                   renderable.render(mutableScopedContext, res);
-                   break;
-                }
-                case NodeType::UnevaluatedTag:
-                   break;
-             }
-          }
-          
+             renderNode(mutableScopedContext, node, res);
+
           return res;
        }
     };
     
-    struct Conditional
+    struct If : public Block
     {
-       std::string condition;
-       BlockBody then;       
-       
-       auto tie() const
+       If(Tag&& tag)
+        : Block(std::move(tag))
+       {}
+
+       friend std::ostream& operator<<(std::ostream& os, const If& con)
        {
-          return std::tie(condition, then);
+          return os << "if (" << con.value << ") {" << /*TODO* ??? << */ "}";
        }
        
-       bool operator==(const Conditional& other) const
+       void render(Context& context, std::string& res) const override final
        {
-          return tie() == other.tie();
-       }
-                     
-       friend std::ostream& operator<<(std::ostream& os, const Conditional& con)
-       {
-          return os << "if (" << con.condition << ") {" << con.then << "}";
+
        }
     };
 
+    struct TagFactory
+    {
+       std::shared_ptr<Tag> operator()(UnevaluatedTag&& tag) const
+       {
+          if (tag.name == "for")
+             return std::make_shared<For>(std::move(tag));
+          if (tag.name == "if")
+             return std::make_shared<If>(std::move(tag));
+          if (tag.name == "comment")
+             return std::make_shared<Comment>(std::move(tag));
+          
+          return nullptr;
+       }
+    };
 }

@@ -7,10 +7,12 @@
 
 namespace liquidpp
 {
+   using OptIndex = boost::optional<size_t>;
+
    struct Key
    {
       string_view name;
-      boost::optional<size_t> idx;
+      OptIndex idx;
 
       explicit operator bool() const
       {

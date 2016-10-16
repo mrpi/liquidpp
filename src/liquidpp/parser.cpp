@@ -37,6 +37,8 @@ BOOST_FUSION_ADAPT_STRUCT(
 
 namespace liquidpp
 {
+namespace impl
+{
    namespace fusion = boost::fusion;
    namespace phoenix = boost::phoenix;
    namespace qi = boost::spirit::qi;
@@ -111,71 +113,23 @@ namespace liquidpp
         qi::rule<Iterator, Variable()> variable;
         qi::rule<Iterator, std::string()> text;
     };
-    
-    bool isBlockNode(const std::string& name)
-    {
-       for(auto blockName : {"comment", "if"})
-       {
-          if (name == blockName)
-             return true;
-       }
-       
-       return false;
-    }
-    
-    template<typename Iterator>
-    BlockBody buildBlocks(Iterator& itr, const Iterator& end, const std::string& endTagName = "")
-    {
-       BlockBody res;
-       res.nodeList.reserve(end - itr);
-       
-       for(; itr != end; ++itr)
-       {
-          auto&& node = *itr;
-          
-          if (type(node) == NodeType::UnevaluatedTag)
-          {
-             auto&& tag = boost::get<UnevaluatedTag>(node);
-             auto&& name = tag.name;
-             if (name == endTagName)
-                break;
-             if (isBlockNode(name))
-             {
-                auto comment = std::make_shared<Comment>();
-                comment->name = tag.name;
-                comment->value = tag.value;
-                comment->body = buildBlocks(++itr, end, "end"+name);
-                res.nodeList.emplace_back(std::shared_ptr<IRenderable>(std::move(comment)));
-                continue;
-             }
-          }
 
-          res.nodeList.push_back(std::move(node));
-       }
-       
-       if (itr == end && !endTagName.empty())
-          throw std::runtime_error("Missing closing tag '{%" + endTagName + "%}'");
-          
-       return res;
-    }
-
-   Template parse(string_view content)
+   BlockBody parseFlat(string_view content)
    {
-      liquidpp::Template ast;
-      
-      typedef liquidpp::LiquidGrammer<string_view::const_iterator> LiquidGrammer;
-      static const LiquidGrammer liquidGrammer;
+      BlockBody flatNodes;
+
+      using Grammer = const LiquidGrammer<string_view::const_iterator>;
+      static Grammer liquidGrammer;
 
       auto iter = content.begin();
       auto end = content.end();
       
-      BlockBody flatNodes;
       bool r = parse(iter, end, liquidGrammer, flatNodes);
       if (!r)
       {
          // We parse again with error message output
          std::ostringstream errorOut;
-         LiquidGrammer liquidGrammer{errorOut};
+         Grammer liquidGrammer{errorOut};
          auto iter = content.begin();
          auto end = content.end();
          
@@ -183,11 +137,10 @@ namespace liquidpp
          parse(iter, end, liquidGrammer, flatNodes);
          throw std::runtime_error("Parsing failed! " + errorOut.str());
       }
-      
-      auto itr = flatNodes.nodeList.begin();
-      ast.root = buildBlocks(itr, flatNodes.nodeList.end());
 
-      return ast;
-   }   
+      return flatNodes;
+   }
+
+}
 }
 

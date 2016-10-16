@@ -11,8 +11,7 @@ namespace BlockUnitTest
   using NodeList = std::vector<liquidpp::Node>;
   using liquidpp::NodeType;
 
-  // FIXME:  
-  constexpr auto NodeTypeConditional = NodeType::Comment;
+  constexpr auto NodeTypeConditional = NodeType::Tag;
 
   std::vector<NodeType> blockTypes(const NodeList& l)
   {
@@ -75,7 +74,7 @@ namespace BlockUnitTest
       SECTION(str) 
       {
          auto template_ = liquidpp::parse(str);
-         std::vector<NodeType> expected{NodeType::String, NodeType::Comment, NodeType::String};
+         std::vector<NodeType> expected{NodeType::String, NodeType::Tag, NodeType::String};
          REQUIRE(expected == blockTypes(template_.root.nodeList));
          REQUIRE(3 == template_.root.nodeList.size());
       }

@@ -10,9 +10,12 @@ namespace liquidpp
       template<typename T>
       static auto get(T&& propTree)
       {
-         return [propTree = std::forward<T>(propTree)](string_view name) -> Value
+         return [propTree = std::forward<T>(propTree)](OptIndex idx, string_view path) -> Value
          {
-            return propTree.template get_optional<std::string>(name.to_string());
+            auto res = propTree.template get_optional<std::string>(path.to_string());
+            if (res)
+               return *res;
+            return ValueTag::Null;
          };
       }
    };

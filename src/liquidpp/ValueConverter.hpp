@@ -10,8 +10,32 @@
 
 namespace liquidpp
 {
-   using Value = boost::optional<std::string>;
-   using ValueGetter = std::function<Value(string_view)>;
+   enum class ValueTag
+   {
+      Object,
+      Range,
+      Null,
+      OutOfRange,
+      SubValue
+   };
+
+   using ValueBase = boost::variant<std::string, ValueTag>;
+   struct Value : public ValueBase
+   {
+      using ValueBase::ValueBase;
+
+      explicit operator bool() const
+      {
+         return which() == 0;
+      }
+
+      auto operator*() const
+      {
+         return boost::get<std::string>(*this);
+      }
+   };
+
+   using ValueGetter = std::function<Value(OptIndex, string_view)>;
 
     template<typename T>
     struct ValueConverter : public std::false_type
@@ -40,12 +64,12 @@ namespace liquidpp
          template<typename T>
          static auto get(T&& map)
          {
-            return [map = std::forward<T>(map)](string_view name) -> Value
+            return [map = std::forward<T>(map)](OptIndex idx, string_view path) -> Value
             {
-               auto itr = map.find(boost::lexical_cast<KeyT>(name));
+               auto itr = map.find(boost::lexical_cast<KeyT>(path));
                if (itr != map.end())
                   return toValue(itr->second);
-               return Value{};
+               return ValueTag::Null;
             };
          }
        };       
@@ -65,12 +89,13 @@ namespace liquidpp
        template<typename T>
        static auto get(T&& vec)
        {
-          return [vec = std::forward<T>(vec)](string_view name) -> Value
+          return [vec = std::forward<T>(vec)](OptIndex idx, string_view path) -> Value
           {
-             auto idx = boost::lexical_cast<size_t>(name);
-             if (idx < vec.size())
-                return toValue(vec[idx]);
-             return Value{};
+             if (!idx)
+                return ValueTag::Range;
+             if (*idx < vec.size())
+                return toValue(vec[*idx]);
+             return ValueTag::OutOfRange;
           };
        }
     };
