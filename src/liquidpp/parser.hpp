@@ -11,7 +11,6 @@ template<typename TagFactoryT, typename Iterator>
 BlockBody buildBlocks(Iterator& itr, const Iterator& end, const std::string& endTagName = "") {
    BlockBody res;
    res.nodeList.reserve(end - itr);
-   TagFactory tagFac;
 
    for (; itr != end; ++itr) {
       auto& node = *itr;

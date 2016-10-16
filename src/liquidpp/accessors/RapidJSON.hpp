@@ -37,9 +37,12 @@ struct ValueConverter<rapidjson::GenericValue<Encoding, Allocator>> : public std
             if (!v->IsObject())
                return ValueTag::Null;
 
+            auto toRJString = [](auto str){
+               return rapidjson::StringRef(str.data(), str.size());
+            };
             // Workarround: rapidjson 0.12 requires '\0'-termination even when size is given
             std::string keyName{key.name.data(), key.name.size()};
-            itr = v->FindMember(rapidjson::StringRef(keyName.c_str(), keyName.size()));
+            itr = v->FindMember(toRJString(keyName));
             if (itr == v->MemberEnd())
                return ValueTag::Null;
 
