@@ -1,0 +1,20 @@
+#include "TagFactory.hpp"
+
+#include "tags/For.hpp"
+#include "tags/If.hpp"
+#include "tags/Comment.hpp"
+
+namespace liquidpp
+{
+std::shared_ptr<Tag> TagFactory::operator()(UnevaluatedTag&& tag) const
+{
+   if (tag.name == "for")
+      return std::make_shared<For>(std::move(tag));
+   if (tag.name == "if")
+      return std::make_shared<If>(std::move(tag));
+   if (tag.name == "comment")
+      return std::make_shared<Comment>(std::move(tag));
+
+   return nullptr;
+}
+}

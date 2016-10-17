@@ -7,6 +7,8 @@
 #ifdef LIQUIDPP_HAVE_RAPIDJSON
 #include <rapidjson/rapidjson.h>
 #include <rapidjson/document.h>
+#include <liquidpp/tags/For.hpp>
+
 #endif // LIQUIDPP_HAVE_RAPIDJSON
 
 using namespace liquidpp::literals;
@@ -17,6 +19,7 @@ TEST_CASE("parse for tag")
    REQUIRE(templ.root.nodeList.size() == 1);
    auto tagPtr = boost::get<std::shared_ptr<const liquidpp::IRenderable>>(templ.root.nodeList[0]);
    REQUIRE(tagPtr);
+
    auto forTag = std::dynamic_pointer_cast<const liquidpp::For>(tagPtr);
    REQUIRE(forTag);
    REQUIRE(forTag->loopVariable == "var");

@@ -1,7 +1,12 @@
 #pragma once
 
 #include "config.h"
-#include "template.hpp"
+#include "Template.hpp"
+#include "tags/Block.hpp"
+#include "tags/UnevaluatedTag.hpp"
+#include "TagFactory.hpp"
+
+#include <boost/variant/get.hpp>
 
 namespace liquidpp {
 namespace impl {

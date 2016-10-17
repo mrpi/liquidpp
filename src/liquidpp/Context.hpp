@@ -5,7 +5,7 @@
 #include <unordered_map>
 #include <map>
 
-#include <boost/variant/recursive_variant.hpp>
+#include <boost/variant/variant.hpp>
 #include <boost/variant/get.hpp>
 #include <boost/optional.hpp>
 #include <boost/lexical_cast.hpp>

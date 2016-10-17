@@ -5,15 +5,15 @@
 
 #include <boost/variant/recursive_variant.hpp>
 
-#include "Context.hpp"
-
 namespace liquidpp
 {
-    struct IRenderable
-    {
-       virtual ~IRenderable()
-       {}
+   class Context;
+
+   struct IRenderable
+   {
+      virtual ~IRenderable()
+      {}
        
-       virtual void render(Context& context, std::string& out) const = 0;
-    };
+      virtual void render(Context& context, std::string& out) const = 0;
+   };
 }
