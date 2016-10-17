@@ -1,14 +1,13 @@
 #include "catch.hpp"
 
 #include <liquidpp.hpp>
+#include <liquidpp/tags/For.hpp>
 
 #include <boost/property_tree/json_parser.hpp>
 
 #ifdef LIQUIDPP_HAVE_RAPIDJSON
 #include <rapidjson/rapidjson.h>
 #include <rapidjson/document.h>
-#include <liquidpp/tags/For.hpp>
-
 #endif // LIQUIDPP_HAVE_RAPIDJSON
 
 using namespace liquidpp::literals;

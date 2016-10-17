@@ -1,5 +1,7 @@
 #include "Variable.hpp"
 
+#include <tuple>
+
 #include "Context.hpp"
 
 namespace liquidpp
