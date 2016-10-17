@@ -15,7 +15,7 @@ matrix:
           packages:
             - gcc-6
             - g++-6
-            - libboost1.55-all-dev
+            - libboost1.55-dev
             - rapidjson-dev
           sources:
             - boost-latest
