@@ -15,5 +15,4 @@ struct Variable : public IRenderable {
    void render(Context& context, std::string& out) const override final;
 };
 
-
 }

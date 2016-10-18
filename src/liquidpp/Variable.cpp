@@ -14,7 +14,12 @@ bool Variable::operator==(const Variable& other) const {
 
 void Variable::render(Context& context, std::string& out) const {
    auto&& val = context.get(variableName);
-   if (val)
-      out += *val;
+   if (val.isStringViewRepresentable())
+   {
+      auto sv = *val;
+      out.append(sv.data(), sv.size());
+   }
+   else
+      out += val.toString();
 }
 }

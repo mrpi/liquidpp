@@ -41,7 +41,7 @@ namespace RenderUnitTest
 
   TEST_CASE("render with inline context (initializer_list constructor)", TestTags)
   {
-     auto rendered = liquidpp::parse("{{key1}} {{key2}}")({{"key1", "val1"}, {"key2", "val2"}});
+     auto rendered = liquidpp::parse("{{key1}} {{key2}}")({{"key1", std::string{"val1"}}, {"key2", std::string{"val2"}}});
      REQUIRE("val1 val2" == rendered);
   }
 

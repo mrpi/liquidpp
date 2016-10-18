@@ -18,29 +18,28 @@ For::For(Tag&& tag)
 
 void For::render(Context& context, std::string& res) const {
    auto val = context.get(rangeVariable);
-   if (val || val == ValueTag::Object) {
-      renderElement(context, res, val, rangeVariable);
-      return;
+
+   if (val == ValueTag::Range)
+   {
+      size_t idx = 0;
+      while (true) {
+         std::string idxPath = rangeVariable + '[' + boost::lexical_cast<std::string>(idx++) + ']';
+         if (!renderElement(context, res, context.get(idxPath), idxPath))
+            break;
+      }
    }
-
-   if (val != ValueTag::Range)
-      return;
-
-   size_t idx = 0;
-   while (true) {
-      std::string idxPath = rangeVariable + '[' + boost::lexical_cast<std::string>(idx++) + ']';
-      if (!renderElement(context, res, context.get(idxPath), idxPath))
-         break;
+   else if (!val.isNil()) {
+      renderElement(context, res, val, rangeVariable);
    }
 }
 
 bool For::renderElement(Context& context, std::string& res, const Value& currentVal, string_view idxPath) const {
    Context loopVarContext{context};
 
-   if (currentVal)
-      loopVarContext.set(loopVariable, *currentVal);
+   if (currentVal.isSimpleValue())
+      loopVarContext.setLiquidValue(loopVariable, currentVal);
    else if (currentVal != ValueTag::OutOfRange)
-      loopVarContext.setReference(loopVariable, idxPath);
+      loopVarContext.setLink(loopVariable, idxPath);
    else
       return false;
 

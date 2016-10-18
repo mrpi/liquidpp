@@ -21,7 +21,7 @@ namespace liquidpp {
 class Context {
 private:
    const Context* mParent{nullptr};
-   using MapValue = boost::variant<std::string, ValueGetter>;
+   using MapValue = boost::variant<Value, ValueGetter>;
    using StorageT = std::map<std::string, MapValue, std::less<void>>;
    StorageT mValues;
    ValueGetter mAnonymous;
@@ -49,7 +49,7 @@ public:
          if (key.idx || !path.empty())
             return ValueTag::SubValue;
 
-         return boost::get<std::string>(itr->second);
+         return boost::get<Value>(itr->second);
       }
 
       if (mAnonymous) {
@@ -64,7 +64,11 @@ public:
       return ValueTag::Null;
    }
 
-   template<typename T, typename = decltype(toValue(std::declval<T>))>
+   void setLiquidValue(std::string name, const Value& value) {
+      mValues.insert({std::move(name), value});
+   }
+
+   template<typename T>
    void set(std::string name, const T& value, std::enable_if_t<!hasValueConverter<T>, void**> = 0) {
       mValues.insert({std::move(name), toValue(value)});
    }
@@ -74,7 +78,7 @@ public:
       mValues.insert({std::move(name), ValueConverter<std::decay_t<T>>::get(std::forward<T>(value))});
    }
 
-   void setReference(std::string name, string_view referencedPath)
+   void setLink(std::string name, string_view referencedPath)
    {
       auto callRef = [this, referencedPath](OptIndex idx, string_view subPath)
       {

@@ -12,4 +12,4 @@ add_library (liquidpp STATIC
         liquidpp/tags/If.cpp liquidpp/tags/If.hpp
         liquidpp/tags/UnevaluatedTag.hpp
         liquidpp/tags/Tag.cpp liquidpp/tags/Tag.hpp
-        liquidpp/tags/Block.hpp)
+        liquidpp/tags/Block.hpp liquidpp/Expression.hpp liquidpp/Expression.cpp)
