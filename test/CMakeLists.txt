@@ -13,7 +13,7 @@ add_executable (liquidppTest
         ranges.cpp
         tag_for.cpp
         tag_if.cpp
-        tokenize.cpp condition_unit_test.cpp)
+        tokenize.cpp condition_unit_test.cpp tag_assign.cpp)
 
 
 target_link_libraries (liquidppTest

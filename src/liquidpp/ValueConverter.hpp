@@ -204,7 +204,7 @@ private:
    bool compareWith(const Value& other) const
    {
       Compare<C<void>> comp;
-      return boost::apply_visitor(comp, this->data, other.data);;
+      return boost::apply_visitor(comp, this->data, other.data);
    }
 
 public:

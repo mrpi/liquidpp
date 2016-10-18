@@ -21,6 +21,7 @@ namespace liquidpp {
 class Context {
 private:
    const Context* mParent{nullptr};
+   Context* mDocumentScopeContext{nullptr};
    using MapValue = boost::variant<Value, ValueGetter>;
    using StorageT = std::map<std::string, MapValue, std::less<void>>;
    StorageT mValues;
@@ -30,11 +31,23 @@ public:
    Context() = default;
 
    explicit Context(const Context* parent)
-      : mParent(parent) {
+      : mParent(parent), mDocumentScopeContext(this) {
+      assert(mParent->mDocumentScopeContext == nullptr);
+   }
+
+   explicit Context(Context* parent)
+      : mParent(parent), mDocumentScopeContext(mParent->mDocumentScopeContext) {
+      assert(mDocumentScopeContext != nullptr);
    }
 
    Context(std::initializer_list<StorageT::value_type> entries)
       : mValues(entries) {
+   }
+
+   Context& documentScopeContext()
+   {
+      assert(mDocumentScopeContext);
+      return *mDocumentScopeContext;
    }
 
    Value get(const string_view qualifiedPath) const {
@@ -82,7 +95,15 @@ public:
    {
       auto callRef = [this, referencedPath](OptIndex idx, string_view subPath)
       {
-         return get(referencedPath.to_string() + '.' + subPath.to_string());
+         auto path = referencedPath.to_string();
+         if (idx)
+            path += "[" + boost::lexical_cast<std::string>(*idx) + "]";
+         if (!subPath.empty())
+         {
+            path += '.';
+            path.append(subPath.data(), subPath.size());
+         }
+         return get(path);
       };
       mValues.insert({std::move(name), std::move(callRef)});
    }
