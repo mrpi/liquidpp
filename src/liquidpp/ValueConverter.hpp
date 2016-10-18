@@ -4,6 +4,7 @@
 #include <functional>
 #include <unordered_map>
 #include <map>
+#include <vector>
 
 #include <boost/optional.hpp>
 #include <boost/variant/get.hpp>
