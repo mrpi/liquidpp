@@ -180,7 +180,7 @@ public:
 
 private:
    template<typename Comparsion>
-   struct Compare {
+   struct Compare : public boost::static_visitor<bool> {
       template<typename T, typename U>
       bool operator()(const T& left, const U& right) const {
          return false;
@@ -197,6 +197,14 @@ private:
 
       bool operator()(const std::string& left, const string_view& right) const {
          return Comparsion{}(string_view{left}, right);
+      }
+
+      bool operator()(const double& left, const std::intmax_t& right) const {
+         return Comparsion{}(left, static_cast<double>(right));
+      }
+
+      bool operator()(const std::intmax_t& left, const double& right) const {
+         return Comparsion{}(static_cast<double>(left), right);
       }
    };
 
