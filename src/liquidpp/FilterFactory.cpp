@@ -5,7 +5,7 @@
 #include "filters/Downcase.hpp"
 #include "filters/Upcase.hpp"
 #include "filters/Capitalize.hpp"
-#include "filters/Append.hpp"
+#include "filters/Assign.hpp"
 #include "filters/NumberFilter.hpp"
 #include "filters/Default.hpp"
 #include "filters/FloatFilter.hpp"
