@@ -9,8 +9,9 @@ For::For(Tag&& tag)
    : Block(std::move(tag)) {
    std::regex rex{" *([^ ]+) +in +([^ ]+) *"};
    std::smatch match;
-   if (!std::regex_match(value, match, rex))
-      throw std::invalid_argument("Malformed 'for' tag ('" + value + "')!");
+   auto valueStr = value.to_string();
+   if (!std::regex_match(valueStr, match, rex))
+      throw Exception("Malformed 'for' tag!", value);
 
    loopVariable = match[1].str();
    rangeVariable = match[2].str();

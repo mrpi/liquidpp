@@ -11,7 +11,8 @@ void renderNode(Context& context, const Node& node, std::string& res)
    {
       case NodeType::String:
       {
-         res += boost::get<std::string>(node);
+         auto sv = boost::get<string_view>(node);
+         res.append(sv.data(), sv.size());
          break;
       }
       case NodeType::Variable:

@@ -5,6 +5,7 @@
 #include <unordered_map>
 #include <map>
 #include <vector>
+#include <iomanip>
 
 #include <boost/optional.hpp>
 #include <boost/variant/get.hpp>
@@ -20,15 +21,6 @@ enum class ValueTag {
    Null,
    OutOfRange,
    SubValue
-};
-
-struct test {
-   std::string s;
-   string_view sv;
-   long long i;
-   double f;
-   bool b;
-   ValueTag t;
 };
 
 struct Value {
@@ -117,8 +109,16 @@ public:
       return data.which() == 2;
    }
 
+   std::intmax_t integralValue() const {
+      return boost::get<std::intmax_t>(data);
+   }
+
    bool isFloatingPoint() const {
       return data.which() == 3;
+   }
+
+   double floatingPointValue() const {
+      return boost::get<double>(data);
    }
 
    bool isNumber() const {
@@ -163,7 +163,11 @@ public:
       if (isIntegral())
          return boost::lexical_cast<std::string>(boost::get<std::int64_t>(data));
       else if (isFloatingPoint())
-         return boost::lexical_cast<std::string>(boost::get<double>(data));
+      {
+         std::ostringstream oss;
+         oss << std::setprecision(16) << boost::get<double>(data);
+         return oss.str();
+      }
       else
          return (**this).to_string();
    }

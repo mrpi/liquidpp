@@ -52,6 +52,12 @@ inline bool isOperatorChar(char c) {
       return true;
    if (c == '>')
       return true;
+   if (c == '|') // start filter
+      return true;
+   if (c == ':') // in filters
+      return true;
+   if (c == ',') // in filters
+      return true;
    return false;
 }
 
@@ -72,7 +78,13 @@ bool isQuotedString(string_view tokenStr)
    return false;
 }
 
-bool isInteger(string_view sv)
+bool isOperator(const Expression::Token& token)
+{
+   return token.which() == 0;
+}
+}
+
+bool Expression::isInteger(string_view sv)
 {
    if (sv.empty())
       return false;
@@ -90,7 +102,7 @@ bool isInteger(string_view sv)
    return true;
 }
 
-bool isFloat(string_view sv)
+bool Expression::isFloat(string_view sv)
 {
    if (sv.empty())
       return false;
@@ -110,12 +122,6 @@ bool isFloat(string_view sv)
    }
 
    return true;
-}
-
-bool isOperator(const Expression::Token& token)
-{
-   return token.which() == 0;
-}
 }
 
 std::vector<string_view> Expression::splitTokens(string_view sequence) {

@@ -23,6 +23,11 @@ struct Expression {
 
    struct VariableName {
       string_view name;
+
+      bool operator==(const VariableName& other) const
+      {
+         return name == other.name;
+      }
    };
 
    using Token = boost::variant<Operator, Value, VariableName>;
@@ -32,6 +37,8 @@ struct Expression {
    static Token toToken(string_view tokenStr);
    static Expression fromSequence(string_view sequence);
    static Value value(const Context& c, const Token& t);
+   static bool isInteger(string_view sv);
+   static bool isFloat(string_view sv);
 
    Value operator()(Context& c) const;
 

@@ -4,6 +4,7 @@
 #include "tags/Comment.hpp"
 #include "tags/For.hpp"
 #include "tags/If.hpp"
+#include "tags/Capture.hpp"
 
 namespace liquidpp
 {
@@ -17,6 +18,8 @@ std::shared_ptr<Tag> TagFactory::operator()(UnevaluatedTag&& tag) const
       return std::make_shared<Assign>(std::move(tag));
    if (tag.name == "comment")
       return std::make_shared<Comment>(std::move(tag));
+   if (tag.name == "capture")
+      return std::make_shared<Capture>(std::move(tag));
 
    return nullptr;
 }

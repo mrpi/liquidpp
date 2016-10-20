@@ -12,4 +12,6 @@ add_library (liquidpp STATIC
         liquidpp/tags/If.cpp liquidpp/tags/If.hpp
         liquidpp/tags/UnevaluatedTag.hpp
         liquidpp/tags/Tag.cpp liquidpp/tags/Tag.hpp
-        liquidpp/tags/Block.hpp liquidpp/Expression.hpp liquidpp/Expression.cpp liquidpp/tags/Assign.hpp liquidpp/tags/Assign.cpp)
+        liquidpp/tags/Block.hpp liquidpp/Expression.hpp liquidpp/Expression.cpp liquidpp/tags/Assign.hpp liquidpp/tags/Append.cpp liquidpp/filters/Filter.hpp liquidpp/filters/Escape.hpp liquidpp/FilterFactory.hpp liquidpp/FilterFactory.cpp liquidpp/Exception.hpp liquidpp/filters/Size.hpp liquidpp/filters/Downcase.hpp liquidpp/filters/Upcase.hpp liquidpp/filters/Capitalize.hpp liquidpp/filters/Append.hpp liquidpp/filters/NumberFilter.hpp liquidpp/filters/Default.hpp liquidpp/filters/FloatFilter.hpp liquidpp/filters/Lstrip.hpp liquidpp/filters/Modulo.hpp liquidpp/tags/Capture.hpp liquidpp/tags/Capture.cpp liquidpp/filters/NewlineToBr.hpp liquidpp/filters/Prepend.hpp liquidpp/filters/Remove.hpp liquidpp/filters/RemoveFirst.hpp liquidpp/filters/Replace.hpp liquidpp/filters/ReplaceFirst.hpp liquidpp/filters/Round.hpp liquidpp/filters/Rstrip.hpp liquidpp/filters/Slice.hpp liquidpp/filters/Strip.hpp liquidpp/filters/StripNewlines.hpp)
+
+TARGET_LINK_LIBRARIES(liquidpp boost_locale)
