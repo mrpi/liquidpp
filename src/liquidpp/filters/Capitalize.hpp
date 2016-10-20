@@ -2,8 +2,6 @@
 
 #include "Filter.hpp"
 
-#include <boost/locale/conversion.hpp>
-
 namespace liquidpp
 {
 namespace filters
