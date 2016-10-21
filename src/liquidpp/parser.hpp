@@ -24,6 +24,16 @@ inline string_view popString(string_view& str) {
          if (i != 0 && str[i-1] == '{') {
             auto res = str.substr(0, i-1);
             str.remove_prefix(i-1);
+
+            if (i+1 < len && str[2] == '-')
+            {
+               auto idx = res.find_last_not_of(" \t\r\n");
+               if (idx == std::string::npos)
+                  return string_view{};
+               else
+                  res.remove_suffix(res.size() - idx - 1);
+            }
+
             return res;
          }
       }
@@ -34,13 +44,14 @@ inline string_view popString(string_view& str) {
    return res;
 }
 
-inline string_view popTag(string_view& str) {
+inline string_view popTag(string_view& str, bool& stripNextString) {
    assert(str.substr(0, 2) == "{%");
 
    auto len = str.size();
    for (size_t i = 0; i < len; i++) {
       if (str[i] == '}') {
          if (str[i-1] == '%') {
+            stripNextString = str[i-2] == '-';
             auto res = str.substr(0, i+1);
             str.remove_prefix(i+1);
             return res;
@@ -51,7 +62,7 @@ inline string_view popTag(string_view& str) {
    throw Exception("Unterminated tag!", str.substr(0, 2));
 }
 
-inline string_view popVariable(string_view& str) {
+inline string_view popVariable(string_view& str, bool& stripNextString) {
    assert(str.substr(0, 2) == "{{");
 
    auto len = str.size();
@@ -89,8 +100,17 @@ void fastParser(string_view content, BlockBody& flatNodes)
       return State::String;
    };
 
+   bool stripLeadingWhitespace = false;
    while(!content.empty())
    {
+      if (stripLeadingWhitespace)
+      {
+         auto pos = content.find_first_not_of(" \t\r\n");
+         if (pos != std::string::npos)
+            content.remove_prefix(pos);
+         stripLeadingWhitespace = false;
+      }
+
       switch(getType(content))
       {
          case State::String:
@@ -98,13 +118,13 @@ void fastParser(string_view content, BlockBody& flatNodes)
             break;
          case State::Tag:
          {
-            auto tagStr = popTag(content);
+            auto tagStr = popTag(content, stripLeadingWhitespace);
             nodes.emplace_back(UnevaluatedTag{tagStr});
             break;
          }
          case State::Variable:
          {
-            auto varStr = popVariable(content);
+            auto varStr = popVariable(content, stripLeadingWhitespace);
             nodes.emplace_back(Variable{FilterFactoryT{}, varStr});
             break;
          }

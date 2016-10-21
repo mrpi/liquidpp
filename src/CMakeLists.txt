@@ -2,7 +2,7 @@
 CONFIGURE_FILE(${CMAKE_CURRENT_SOURCE_DIR}/liquidpp/config.h.in ${CMAKE_CURRENT_SOURCE_DIR}/liquidpp/config.h)
 
 add_library (liquidpp STATIC
-        liquidpp/parser.cpp liquidpp/parser.hpp
+        liquidpp/parser.hpp
         liquidpp/Template.cpp liquidpp/Template.hpp
         liquidpp/BlockBody.cpp liquidpp/BlockBody.hpp
         liquidpp/Variable.cpp liquidpp/Variable.hpp
@@ -39,4 +39,4 @@ add_library (liquidpp STATIC
         liquidpp/filters/Rstrip.hpp
         liquidpp/filters/Slice.hpp
         liquidpp/filters/Strip.hpp
-        liquidpp/filters/StripNewlines.hpp)
+        liquidpp/filters/StripNewlines.hpp liquidpp/tags/Case.hpp liquidpp/tags/Case.cpp)

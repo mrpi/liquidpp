@@ -2,6 +2,8 @@
 
 #include "ValueConverter.hpp"
 
+#include <boost/container/small_vector.hpp>
+
 namespace liquidpp {
 
 class Context;
@@ -30,10 +32,11 @@ struct Expression {
       }
    };
 
+   using RawTokens = boost::container::small_vector<string_view, 4>;
    using Token = boost::variant<Operator, Value, VariableName>;
 
    static bool matches(const Value& left, Operator operator_, const Value& right);
-   static std::vector<string_view> splitTokens(string_view sequence);
+   static RawTokens splitTokens(string_view sequence);
    static Token toToken(string_view tokenStr);
    static Expression fromSequence(string_view sequence);
    static Value value(const Context& c, const Token& t);

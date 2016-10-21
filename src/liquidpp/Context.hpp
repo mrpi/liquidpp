@@ -59,8 +59,16 @@ public:
          if (itr->second.which() == 1)
             return boost::get<ValueGetter>(itr->second)(key.idx, path);
 
-         if (key.idx || !path.empty())
+         if (key.idx)
             return ValueTag::SubValue;
+
+         if (!path.empty())
+         {
+            if (path == "size")
+               return toValue(boost::get<Value>(itr->second).toString().size());
+
+            return ValueTag::SubValue;
+         }
 
          return boost::get<Value>(itr->second);
       }
@@ -77,18 +85,18 @@ public:
       return ValueTag::Null;
    }
 
-   void setLiquidValue(std::string name, const Value& value) {
-      mValues.insert({std::move(name), value});
+   void setLiquidValue(std::string name, Value value) {
+      mValues[name] = std::move(value);
    }
 
    template<typename T>
    void set(std::string name, const T& value, std::enable_if_t<!hasValueConverter<T>, void**> = 0) {
-      mValues.insert({std::move(name), toValue(value)});
+      setLiquidValue(std::move(name), toValue(value));
    }
 
    template<typename T>
    void set(std::string name, T&& value, std::enable_if_t<hasValueConverter<std::decay_t<T>>, void**> = 0) {
-      mValues.insert({std::move(name), ValueConverter<std::decay_t<T>>::get(std::forward<T>(value))});
+      mValues[name] = ValueConverter<std::decay_t<T>>::get(std::forward<T>(value));
    }
 
    void setLink(std::string name, string_view referencedPath)
@@ -105,7 +113,7 @@ public:
          }
          return get(path);
       };
-      mValues.insert({std::move(name), std::move(callRef)});
+      mValues[name] = std::move(callRef);
    }
 
    template<typename T>

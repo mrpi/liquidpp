@@ -5,11 +5,9 @@
 
 using namespace liquidpp::literals;
 
-using Tokens = std::vector<liquidpp::string_view>;
-
 TEST_CASE("split expression tokens")
 {
-   auto check = [](liquidpp::string_view input, const Tokens& expected)
+   auto check = [](liquidpp::string_view input, const liquidpp::Expression::RawTokens& expected)
    {
       auto tokens = liquidpp::Expression::splitTokens(input);
       REQUIRE(tokens == expected);

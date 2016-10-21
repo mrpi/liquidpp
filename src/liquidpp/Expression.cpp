@@ -1,6 +1,7 @@
 #include "Expression.hpp"
 
 #include "Context.hpp"
+#include "Exception.hpp"
 
 namespace liquidpp
 {
@@ -61,6 +62,7 @@ inline bool isOperatorChar(char c) {
    return false;
 }
 
+#if 0
 bool isQuotedString(string_view tokenStr)
 {
    if (tokenStr.size() < 2)
@@ -77,6 +79,7 @@ bool isQuotedString(string_view tokenStr)
 
    return false;
 }
+#endif
 
 bool isOperator(const Expression::Token& token)
 {
@@ -124,8 +127,8 @@ bool Expression::isFloat(string_view sv)
    return true;
 }
 
-std::vector<string_view> Expression::splitTokens(string_view sequence) {
-   std::vector<string_view> res;
+Expression::RawTokens Expression::splitTokens(string_view sequence) {
+   RawTokens res;
    const size_t len = sequence.size();
    if (len == 0)
       return res;
@@ -221,24 +224,57 @@ std::vector<string_view> Expression::splitTokens(string_view sequence) {
 
 Expression::Token Expression::toToken(string_view tokenStr)
 {
-   if (tokenStr == "false")
-      return Value::fromBool(false);
-   else if (tokenStr == "true")
-      return Value::fromBool(true);
-   else if (isQuotedString(tokenStr))
+   switch(tokenStr[0])
    {
-      tokenStr.remove_prefix(1);
-      tokenStr.remove_suffix(1);
-      return Value::reference(tokenStr);
+      case 'a':
+         if (tokenStr == "and")
+            return Operator::And;
+         break;
+      case 'c':
+         if (tokenStr == "contains")
+            return Operator::Contains;
+         break;
+      case 'f':
+         if (tokenStr == "false")
+            return Value::fromBool(false);
+         break;
+      case 'o':
+         if (tokenStr == "or")
+            return Operator::Or;
+         break;
+      case 't':
+         if (tokenStr == "true")
+            return Value::fromBool(true);
+         break;
+      case '\'':
+      case '"':
+         tokenStr.remove_prefix(1);
+         tokenStr.remove_suffix(1);
+         return Value::reference(tokenStr);
+      case '-':
+      case '0':
+      case '1':
+      case '2':
+      case '3':
+      case '4':
+      case '5':
+      case '6':
+      case '7':
+      case '8':
+      case '9':
+         if (isInteger(tokenStr))
+            return Value::fromIntegral(boost::lexical_cast<std::int64_t>(tokenStr));
+         else if (isFloat(tokenStr))
+            return Value::fromFloatingPoint(boost::lexical_cast<double>(tokenStr));
+      case '<':
+      case '>':
+      case '=':
+      case '!':
+         auto opr = toOperator(tokenStr);
+         if (!opr)
+            throw Exception("Unknown operator!", tokenStr);
+         return *opr;
    }
-   else if (isInteger(tokenStr))
-      return Value::fromIntegral(boost::lexical_cast<std::int64_t>(tokenStr));
-   else if (isFloat(tokenStr))
-      return Value::fromFloatingPoint(boost::lexical_cast<double>(tokenStr));
-
-   auto opr = toOperator(tokenStr);
-   if (opr)
-      return *opr;
 
    return VariableName{tokenStr};
 }

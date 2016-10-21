@@ -8,7 +8,7 @@ namespace BlockUnitTest
 {
   constexpr const char* TestTags = "[block]";
   
-  using NodeList = std::vector<liquidpp::Node>;
+  using NodeList = liquidpp::BlockBody::Nodes;
   using liquidpp::NodeType;
 
   constexpr auto NodeTypeConditional = NodeType::Tag;
