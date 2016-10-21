@@ -69,6 +69,7 @@ inline string_view popVariable(string_view& str, bool& stripNextString) {
    for (size_t i = 0; i < len; i++) {
       if (str[i] == '}') {
          if (str[i-1] == '}') {
+            stripNextString = str[i-2] == '-';
             auto res = str.substr(0, i+1);
             str.remove_prefix(i+1);
             return res;

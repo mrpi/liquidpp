@@ -13,6 +13,7 @@
 #include <boost/lexical_cast.hpp>
 
 #include "config.h"
+#include "Key.hpp"
 
 namespace liquidpp {
 enum class ValueTag {
@@ -311,14 +312,31 @@ namespace impl {
 template<typename KeyT, typename ValueT>
 struct AssociativeContainerConverter : public std::true_type {
    template<typename T>
-   static auto get(T&& map) {
+   static auto get(T&& map, std::enable_if_t<!hasValueConverter<ValueT>, void**> = 0) {
       return [map = std::forward<T>(map)](OptIndex
       idx, string_view
       path) -> Value
       {
-         auto itr = map.find(boost::lexical_cast<KeyT>(path));
+         auto key = popKey(path);
+         auto itr = map.find(boost::lexical_cast<KeyT>(key.name));
          if (itr != map.end())
+         {
+            if (key.idx || !path.empty())
+               return ValueTag::SubValue;
             return toValue(itr->second);
+         }
+         return ValueTag::Null;
+      };
+   }
+
+   template<typename T>
+   static auto get(T&& map, std::enable_if_t<hasValueConverter<ValueT>, void**> = 0) {
+      return [map = std::forward<T>(map)](OptIndex idx, string_view path) -> Value
+      {
+         auto key = popKey(path);
+         auto itr = map.find(boost::lexical_cast<KeyT>(key.name));
+         if (itr != map.end())
+            return ValueConverter<ValueT>::get(itr->second)(key.idx, path);
          return ValueTag::Null;
       };
    }
@@ -336,15 +354,29 @@ struct ValueConverter<std::unordered_map<KeyT, ValueT>> : public impl::Associati
 template<typename ValueT>
 struct ValueConverter<std::vector<ValueT>> : public std::true_type {
    template<typename T>
-   static auto get(T&& vec) {
-      return [vec = std::forward<T>(vec)](OptIndex
-      idx, string_view
-      path) -> Value
+   static auto get(T&& vec, std::enable_if_t<!hasValueConverter<ValueT>, void**> = 0) {
+      return [vec = std::forward<T>(vec)](OptIndex idx, string_view path) -> Value
       {
          if (!idx)
             return ValueTag::Range;
          if (*idx < vec.size())
+         {
+            if (!path.empty())
+               return ValueTag::SubValue;
             return toValue(vec[*idx]);
+         }
+         return ValueTag::OutOfRange;
+      };
+   }
+
+   template<typename T>
+   static auto get(T&& vec, std::enable_if_t<hasValueConverter<ValueT>, void**> = 0) {
+      return [vec = std::forward<T>(vec)](OptIndex idx, string_view path) -> Value
+      {
+         if (!idx)
+            return ValueTag::Range;
+         if (*idx < vec.size())
+            return ValueConverter<ValueT>::get(vec[*idx])(boost::none, path);
          return ValueTag::OutOfRange;
       };
    }
