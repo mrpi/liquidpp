@@ -344,7 +344,7 @@ namespace impl {
 template<typename KeyT, typename ValueT>
 struct AssociativeContainerConverter : public std::true_type {
    template<typename T>
-   static auto get(T&& map, std::enable_if_t<!hasValueConverter<ValueT>, void**> = 0) {
+   static auto get(T&& map, std::enable_if_t<!hasValueConverter<typename std::decay_t<T>::value_type>, void**> = 0) {
       return [map = std::forward<T>(map)](OptIndex
       idx, string_view
       path) -> Value
@@ -362,7 +362,7 @@ struct AssociativeContainerConverter : public std::true_type {
    }
 
    template<typename T>
-   static auto get(T&& map, std::enable_if_t<hasValueConverter<ValueT>, void**> = 0) {
+   static auto get(T&& map, std::enable_if_t<hasValueConverter<typename std::decay_t<T>::value_type>, void**> = 0) {
       return [map = std::forward<T>(map)](OptIndex idx, string_view path) -> Value
       {
          auto key = popKey(path);
@@ -386,7 +386,7 @@ struct ValueConverter<std::unordered_map<KeyT, ValueT>> : public impl::Associati
 template<typename ValueT>
 struct ValueConverter<std::vector<ValueT>> : public std::true_type {
    template<typename T>
-   static auto get(T&& vec, std::enable_if_t<!hasValueConverter<ValueT>, void**> = 0) {
+   static auto get(T&& vec, std::enable_if_t<!hasValueConverter<typename std::decay_t<T>::value_type>, void**> = 0) {
       return [vec = std::forward<T>(vec)](OptIndex idx, string_view path) -> Value
       {
          if (!idx)
@@ -402,7 +402,7 @@ struct ValueConverter<std::vector<ValueT>> : public std::true_type {
    }
 
    template<typename T>
-   static auto get(T&& vec, std::enable_if_t<hasValueConverter<ValueT>, void**> = 0) {
+   static auto get(T&& vec, std::enable_if_t<hasValueConverter<typename std::decay_t<T>::value_type>, void**> = 0) {
       return [vec = std::forward<T>(vec)](OptIndex idx, string_view path) -> Value
       {
          if (!idx)
