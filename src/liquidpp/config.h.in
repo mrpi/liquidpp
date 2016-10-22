@@ -17,7 +17,7 @@ namespace liquidpp
 
 #ifdef LIQUIDPP_HAVE_BOOST_SMALL_VECTOR
    template<typename T, size_t S>
-   using SmallVector = boost::container::small_vector<T, S>
+   using SmallVector = boost::container::small_vector<T, S>;
 #else
    template<typename T, size_t S>
    using SmallVector = std::vector<T>;
