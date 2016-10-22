@@ -306,6 +306,14 @@ struct ValueConverter : public std::false_type {
 };
 
 template<typename T>
+struct ValueConverter<const T> : public ValueConverter<T> {
+};
+
+template<typename T>
+struct ValueConverter<T&> : public ValueConverter<T> {
+};
+
+template<typename T>
 constexpr bool hasValueConverter = ValueConverter<T>::value;
 
 inline Value toValue(std::string v) {
@@ -336,15 +344,24 @@ Value toValue(T t, std::enable_if_t<!hasValueConverter<T> && std::is_floating_po
 }
 
 template<typename T>
-std::string toValue(const T& value, std::enable_if_t<hasValueConverter<T>, void**> = 0) {
-   return ValueConverter<T>::get(value);
+Value elementToValue(T&& t, OptIndex idx, string_view path, std::enable_if_t<!hasValueConverter<T>, void**> = 0)
+{
+   if (idx || !path.empty())
+      return ValueTag::SubValue;
+   return toValue(std::forward<T>(t));
+}
+
+template<typename T>
+Value elementToValue(T&& t, OptIndex idx, string_view path, std::enable_if_t<hasValueConverter<T>, void**> = 0)
+{
+   return ValueConverter<T>::get(std::forward<T>(t))(idx, path);
 }
 
 namespace impl {
 template<typename KeyT, typename ValueT>
 struct AssociativeContainerConverter : public std::true_type {
    template<typename T>
-   static auto get(T&& map, std::enable_if_t<!hasValueConverter<typename std::decay_t<T>::value_type>, void**> = 0) {
+   static auto get(T&& map) {
       return [map = std::forward<T>(map)](OptIndex
       idx, string_view
       path) -> Value
@@ -352,23 +369,7 @@ struct AssociativeContainerConverter : public std::true_type {
          auto key = popKey(path);
          auto itr = map.find(boost::lexical_cast<KeyT>(key.name));
          if (itr != map.end())
-         {
-            if (key.idx || !path.empty())
-               return ValueTag::SubValue;
-            return toValue(itr->second);
-         }
-         return ValueTag::Null;
-      };
-   }
-
-   template<typename T>
-   static auto get(T&& map, std::enable_if_t<hasValueConverter<typename std::decay_t<T>::value_type>, void**> = 0) {
-      return [map = std::forward<T>(map)](OptIndex idx, string_view path) -> Value
-      {
-         auto key = popKey(path);
-         auto itr = map.find(boost::lexical_cast<KeyT>(key.name));
-         if (itr != map.end())
-            return ValueConverter<ValueT>::get(itr->second)(key.idx, path);
+            return elementToValue(itr->second, key.idx, path);
          return ValueTag::Null;
       };
    }
@@ -386,29 +387,13 @@ struct ValueConverter<std::unordered_map<KeyT, ValueT>> : public impl::Associati
 template<typename ValueT>
 struct ValueConverter<std::vector<ValueT>> : public std::true_type {
    template<typename T>
-   static auto get(T&& vec, std::enable_if_t<!hasValueConverter<typename std::decay_t<T>::value_type>, void**> = 0) {
+   static auto get(T&& vec) {
       return [vec = std::forward<T>(vec)](OptIndex idx, string_view path) -> Value
       {
          if (!idx)
             return RangeDefinition{vec.size()};
          if (*idx < vec.size())
-         {
-            if (!path.empty())
-               return ValueTag::SubValue;
-            return toValue(vec[*idx]);
-         }
-         return ValueTag::OutOfRange;
-      };
-   }
-
-   template<typename T>
-   static auto get(T&& vec, std::enable_if_t<hasValueConverter<typename std::decay_t<T>::value_type>, void**> = 0) {
-      return [vec = std::forward<T>(vec)](OptIndex idx, string_view path) -> Value
-      {
-         if (!idx)
-            return RangeDefinition{vec.size()};
-         if (*idx < vec.size())
-            return ValueConverter<ValueT>::get(vec[*idx])(boost::none, path);
+            return elementToValue(vec[*idx], boost::none, path);
          return ValueTag::OutOfRange;
       };
    }

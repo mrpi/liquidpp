@@ -21,6 +21,7 @@ check_include_file_cxx(experimental/string_view LIQUIDPP_HAVE_STD_EXPERIMENTAL_S
 check_include_file_cxx(boost/utility/string_view.hpp LIQUIDPP_HAVE_BOOST_STRING_VIEW) 
 check_include_file_cxx("nonius/nonius_single.h++" LIQUIDPP_HAVE_NONIUS)
 check_include_file_cxx(rapidjson/rapidjson.h LIQUIDPP_HAVE_RAPIDJSON)
+check_include_file_cxx(boost/container/small_vector.hpp LIQUIDPP_HAVE_BOOST_SMALL_VECTOR)
 
 if (LIQUIDPP_HAVE_STD_STRING_VIEW)
    message("using std::string_view")
@@ -40,13 +41,17 @@ else (LIQUIDPP_HAVE_STD_STRING_VIEW)
    set(LIQUIDPP_STRING_VIEW_CLASS boost::string_view)
 endif (LIQUIDPP_HAVE_STD_STRING_VIEW)
 
+if (!LIQUIDPP_HAVE_BOOST_SMALL_VECTOR)
+   message("boost::container::small_vector is not available (using std::vector instead)")
+endif(!LIQUIDPP_HAVE_BOOST_SMALL_VECTOR)
+
 add_subdirectory (src) 
 
 enable_testing()
 add_subdirectory (test)
 
-#if (LIQUIDPP_HAVE_NONIUS)
+if (LIQUIDPP_HAVE_NONIUS)
   add_subdirectory (benchmark)
-#else (LIQUIDPP_HAVE_NONIUS)
-#   message("not building benchmarks (nonius library is missing)")
-#endif (LIQUIDPP_HAVE_NONIUS)
+else (LIQUIDPP_HAVE_NONIUS)
+   message("not building benchmarks (nonius library is missing)")
+endif (LIQUIDPP_HAVE_NONIUS)

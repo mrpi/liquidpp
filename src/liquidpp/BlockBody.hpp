@@ -38,7 +38,7 @@ inline bool isSpecificTag(const Node& node, string_view name)
 }
 
 struct BlockBody {
-   using Nodes = boost::container::small_vector<Node, 4>;
+   using Nodes = SmallVector<Node, 4>;
 
    Nodes nodeList;
 };

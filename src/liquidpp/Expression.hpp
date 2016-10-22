@@ -1,8 +1,7 @@
 #pragma once
 
 #include "ValueConverter.hpp"
-
-#include <boost/container/small_vector.hpp>
+#include "config.h"
 
 namespace liquidpp {
 
@@ -32,7 +31,7 @@ struct Expression {
       }
    };
 
-   using RawTokens = boost::container::small_vector<string_view, 4>;
+   using RawTokens = SmallVector<string_view, 4>;
    using Token = boost::variant<Operator, Value, VariableName>;
 
    static bool matches(const Value& left, Operator operator_, const Value& right);
