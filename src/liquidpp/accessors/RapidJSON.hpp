@@ -77,7 +77,7 @@ struct ValueConverter<rapidjson::GenericValue<Encoding, Allocator>> : public std
          if (v->IsObject())
             return ValueTag::Object;
          if (v->IsArray())
-            return ValueTag::Range;
+            return RangeDefinition{v->Size()};
          return ValueTag::Null;
       };
    }

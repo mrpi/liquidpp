@@ -23,7 +23,7 @@ For::For(Tag&& tag)
          {
             if (tokens[i+1] != ":")
                throw Exception("Expected operator ':' after parameter name!", tokens[i+1]);
-            limit = Expression::toToken(tokens[i+2]);
+            limitToken = Expression::toToken(tokens[i+2]);
             i += 2;
          }
          else
@@ -35,7 +35,7 @@ For::For(Tag&& tag)
          {
             if (tokens[i+1] != ":")
                throw Exception("Expected operator ':' after parameter name!", tokens[i+1]);
-            offset = Expression::toToken(tokens[i+2]);
+            offsetToken = Expression::toToken(tokens[i+2]);
             i += 2;
          }
          else
@@ -71,72 +71,117 @@ boost::optional<For::RangeExpression> For::toRangeDefinition(string_view sv)
    return boost::none;
 }
 
+Value For::LoopData::get(OptIndex requIdx, string_view path) const
+{
+   if (requIdx)
+      return ValueTag::Object;
+
+   if (path == "first")
+      return toValue(idx == 0);
+   if (path == "index")
+      return toValue(idx + 1);
+   if (path == "index0")
+      return toValue(idx);
+   if (path == "last")
+      return toValue(idx + 1 == size);
+   if (path == "length")
+      return toValue(size);
+   if (path == "rindex")
+      return toValue(size - idx);
+   if (path == "rindex0")
+      return toValue(size - idx - 1);
+
+   return ValueTag::Null;
+}
+
 void For::render(Context& context, std::string& res) const {
    auto rangeExpr = toRangeDefinition(rangeVariable);
+   size_t rangeExprStart = 0;
+   size_t rangeExprEnd = 0;
+   Value val;
+
    if (rangeExpr)
    {
-      renderOnRange(context, res, *rangeExpr);
+      rangeExprStart = Expression::value(context, rangeExpr->startIdxToken).integralValue();
+      rangeExprEnd = Expression::value(context, rangeExpr->endIdxToken).integralValue();
+   }
+   else
+      val = context.get(rangeVariable);
+
+   size_t size = 0;
+   if (rangeExpr)
+      size = rangeExprEnd - rangeExprStart + 1;
+   else if (val.isRange())
+      size = val.size();
+   else if (val.isSimpleValue())
+      size = 1;
+
+   auto getValue = [&](size_t i) mutable {
+      if (rangeExpr)
+         return std::make_tuple(toValue(rangeExprStart + i), std::string{});
+      else if (val.isSimpleValue())
+         return std::make_tuple(val, std::string{});
+      else if (val.isRange())
+      {
+         std::string idxPath = rangeVariable + '[' + boost::lexical_cast<std::string>(i) + ']';
+         return std::make_tuple(context.get(idxPath), idxPath);
+      }
+
+      return std::make_tuple(Value{ValueTag::OutOfRange}, std::string{});
+   };
+
+   size_t offset = 0;
+   if (offsetToken)
+      offset = Expression::value(context, *offsetToken).integralValue();
+
+   size_t limit = size - offset;
+   if (limitToken)
+   {
+      auto l = static_cast<size_t>(Expression::value(context, *limitToken).integralValue());
+      if (l < limit)
+         limit = l;
+   }
+
+   if (limit == 0)
+   {
+      bool elseFound = false;
+      for (auto&& node : body.nodeList)
+      {
+         if (isSpecificTag(node, "else"))
+            elseFound = true;
+         else if (elseFound)
+            renderNode(context, node, res);
+      }
       return;
    }
 
-   auto val = context.get(rangeVariable);
+   for (size_t i = 0; i < limit; i++) {
+      size_t idx = i + offset;
+      if (reversed)
+         idx = size - offset - i - 1;
 
-   size_t itmIdx = 0;
-   boost::optional<size_t> limitSize;
-   if (limit)
-      limitSize = Expression::value(context, *limit).integralValue();
+      auto itm = getValue(idx);
+      if (!renderElement(context, res, std::get<0>(itm), std::get<1>(itm), LoopData{i, limit}))
+         break;
+   }
+}
 
-   try {
-      if (val == ValueTag::Range)
+template<>
+struct ValueConverter<For::LoopData> : public std::true_type {
+   template<typename T>
+   static auto get(T&& loopData) {
+      return [loopData = std::forward<T>(loopData)](OptIndex
+      idx, string_view
+      path) -> Value
       {
-         size_t idx = 0;
-         while (true) {
-            if (limitSize && itmIdx++ == *limitSize)
-               break;
+         return loopData.get(idx, path);
+      };
+   }
+};
 
-            try {
-               std::string idxPath = rangeVariable + '[' + boost::lexical_cast<std::string>(idx++) + ']';
-               if (!renderElement(context, res, context.get(idxPath), idxPath))
-                  break;
-            } catch(DoContinue&) {}
-         }
-      }
-      else if (!val.isNil()) {
-         try {
-            if (limitSize && itmIdx++ == 0)
-               return;
-
-            renderElement(context, res, val, rangeVariable);
-         } catch(DoContinue&) {}
-      }
-   } catch(DoBreak&) {}
-}
-
-void For::renderOnRange(Context& context, std::string& res, const RangeExpression& range) const
-{
-   auto start = Expression::value(context, range.startIdxToken).integralValue();
-   auto end = Expression::value(context, range.endIdxToken).integralValue();
-
-   size_t itmIdx = 0;
-   boost::optional<size_t> limitSize;
-   if (limit)
-      limitSize = Expression::value(context, *limit).integralValue();
-
-   try {
-      for (auto i = start; i <= end; ++i) {
-         if (limitSize && itmIdx++ == *limitSize)
-            break;
-
-         try {
-            renderElement(context, res, toValue(i), string_view{});
-         } catch (DoContinue&) {}
-      }
-   } catch (DoBreak&) {}
-}
-
-
-bool For::renderElement(Context& context, std::string& res, const Value& currentVal, string_view idxPath) const {
+bool For::renderElement(Context& context, std::string& res, const Value& currentVal, string_view idxPath, LoopData forLoop) const {
    Context loopVarContext{context};
+   loopVarContext.set("forloop", forLoop);
 
    if (currentVal.isSimpleValue())
       loopVarContext.setLiquidValue(loopVariable, currentVal);
@@ -145,10 +190,17 @@ bool For::renderElement(Context& context, std::string& res, const Value& current
    else
       return false;
 
-   for (auto&& node : body.nodeList)
-      renderNode(loopVarContext, node, res);
+   try {
+      for (auto&& node : body.nodeList)
+      {
+         if (isSpecificTag(node, "else"))
+            break;
+         renderNode(loopVarContext, node, res);
+      }
 
-   return true;
+      return true;
+   }
+   catch (DoContinue&) { return true; }
+   catch (DoBreak&) { return false; }
 }
-
 }

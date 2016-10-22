@@ -18,15 +18,23 @@
 namespace liquidpp {
 enum class ValueTag {
    Object,
-   Range,
    Null,
    OutOfRange,
    SubValue
 };
 
+struct RangeDefinition
+{
+   size_t size;
+
+   bool operator==(const RangeDefinition& other) const {
+      return size == other.size;
+   }
+};
+
 struct Value {
 private:
-   boost::variant<string_view, std::string, std::intmax_t, double, bool, ValueTag> data{ValueTag::Null};
+   boost::variant<string_view, std::string, std::intmax_t, double, bool, RangeDefinition, ValueTag> data{ValueTag::Null};
 
 public:
    Value() = default;
@@ -41,6 +49,9 @@ public:
 
    Value(ValueTag tag)
       : data(tag) {}
+
+   Value(RangeDefinition rangeDef)
+      : data(rangeDef) {}
 
    Value(const std::string& v)
       : data(v) {}
@@ -77,12 +88,29 @@ public:
       return res;
    }
 
-   bool isValueTag() const {
+   bool isRange() const {
       return data.which() == 5;
    }
 
+   size_t size() const {
+      if (isRange())
+         return boost::get<RangeDefinition>(data).size;
+      if (isStringViewRepresentable())
+      {
+         string_view sv = **this;
+         return sv.size();
+      }
+
+      // count of (printed) decimals of numbers
+      return toString().size();
+   }
+
+   bool isValueTag() const {
+      return data.which() == 6;
+   }
+
    bool isSimpleValue() const {
-      return !isValueTag();
+      return !isValueTag() && !isRange();
    }
 
    bool isNil() const {
@@ -211,6 +239,10 @@ private:
 
       bool operator()(const std::intmax_t& left, const double& right) const {
          return Comparsion{}(static_cast<double>(left), right);
+      }
+
+      bool operator()(const RangeDefinition& left, const RangeDefinition& right) const {
+         return false;
       }
    };
 
@@ -358,7 +390,7 @@ struct ValueConverter<std::vector<ValueT>> : public std::true_type {
       return [vec = std::forward<T>(vec)](OptIndex idx, string_view path) -> Value
       {
          if (!idx)
-            return ValueTag::Range;
+            return RangeDefinition{vec.size()};
          if (*idx < vec.size())
          {
             if (!path.empty())
@@ -374,7 +406,7 @@ struct ValueConverter<std::vector<ValueT>> : public std::true_type {
       return [vec = std::forward<T>(vec)](OptIndex idx, string_view path) -> Value
       {
          if (!idx)
-            return ValueTag::Range;
+            return RangeDefinition{vec.size()};
          if (*idx < vec.size())
             return ValueConverter<ValueT>::get(vec[*idx])(boost::none, path);
          return ValueTag::OutOfRange;

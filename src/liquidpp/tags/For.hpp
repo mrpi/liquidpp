@@ -50,8 +50,8 @@ struct For : public Block
 {
    std::string loopVariable;
    std::string rangeVariable;
-   boost::optional<Expression::Token> limit;
-   boost::optional<Expression::Token> offset;
+   boost::optional<Expression::Token> limitToken;
+   boost::optional<Expression::Token> offsetToken;
    bool reversed{false};
 
    For(Tag&& tag);
@@ -62,11 +62,18 @@ struct For : public Block
       Expression::Token endIdxToken;
    };
 
+   struct LoopData
+   {
+      size_t idx{0};
+      size_t size{0};
+
+      Value get(OptIndex idx, string_view path) const;
+   };
+
    void render(Context& context, std::string& res) const override final;
 
 private:
-   void renderOnRange(Context& context, std::string& res, const RangeExpression& range) const;
-   bool renderElement(Context& context, std::string& res, const Value& currentVal, string_view idxPath) const;
+   bool renderElement(Context& context, std::string& res, const Value& currentVal, string_view idxPath, LoopData forLoop) const;
    static boost::optional<RangeExpression> toRangeDefinition(string_view sv);
 };
 

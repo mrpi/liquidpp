@@ -57,7 +57,7 @@ namespace liquidpp
                return ValueTag::Null;
             }
             else
-               return ValueTag::Range;
+               return RangeDefinition{parent.size()};
          };
       }
    };
