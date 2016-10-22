@@ -16,7 +16,7 @@ add_executable (liquidppTest
         tokenize.cpp
         condition_unit_test.cpp
         tag_assign.cpp
-        filters.cpp tag_capture.cpp whitespace_control.cpp control_flow.cpp iteration.cpp forloop_object.cpp tag_increment.cpp)
+        filters.cpp tag_capture.cpp whitespace_control.cpp control_flow.cpp iteration.cpp forloop_object.cpp tag_increment.cpp tag_cycle.cpp)
 
 
 target_link_libraries (liquidppTest

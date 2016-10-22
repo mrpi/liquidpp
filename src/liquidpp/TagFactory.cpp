@@ -7,6 +7,7 @@
 #include "tags/Capture.hpp"
 #include "tags/Case.hpp"
 #include "tags/Increment.hpp"
+#include "tags/Cycle.hpp"
 
 namespace liquidpp
 {
@@ -34,6 +35,8 @@ std::shared_ptr<Tag> TagFactory::operator()(UnevaluatedTag&& tag) const
       return std::make_shared<Increment>(std::move(tag));
    if (tag.name == "decrement")
       return std::make_shared<Decrement>(std::move(tag));
+   if (tag.name == "cycle")
+      return std::make_shared<Cycle>(std::move(tag));
 
    return nullptr;
 }
