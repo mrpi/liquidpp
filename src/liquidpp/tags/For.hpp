@@ -67,6 +67,12 @@ struct For : public Block
       size_t idx{0};
       size_t size{0};
 
+      LoopData() = default;
+
+      LoopData(size_t idx, size_t size)
+        : idx(idx), size(size)
+      {}
+
       Value get(OptIndex idx, string_view path) const;
    };
 
