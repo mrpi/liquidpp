@@ -2,7 +2,7 @@
 
 #include <liquidpp.hpp>
 
-#include <liquidpp/tags/If.hpp>
+#include <liquidpp/tags/Conditional.hpp>
 
 using namespace liquidpp::literals;
 

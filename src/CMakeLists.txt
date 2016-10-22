@@ -9,7 +9,7 @@ add_library (liquidpp STATIC
         liquidpp/TagFactory.cpp liquidpp/TagFactory.hpp
         liquidpp/tags/Comment.hpp
         liquidpp/tags/For.cpp liquidpp/tags/For.hpp
-        liquidpp/tags/If.cpp liquidpp/tags/If.hpp
+        liquidpp/tags/Conditional.hpp
         liquidpp/tags/UnevaluatedTag.hpp
         liquidpp/tags/Tag.cpp liquidpp/tags/Tag.hpp
         liquidpp/tags/Block.hpp
@@ -39,4 +39,6 @@ add_library (liquidpp STATIC
         liquidpp/filters/Rstrip.hpp
         liquidpp/filters/Slice.hpp
         liquidpp/filters/Strip.hpp
-        liquidpp/filters/StripNewlines.hpp liquidpp/tags/Case.hpp liquidpp/tags/Case.cpp)
+        liquidpp/filters/StripNewlines.hpp
+        liquidpp/tags/Case.hpp liquidpp/tags/Case.cpp
+        liquidpp/tags/Increment.hpp)

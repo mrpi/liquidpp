@@ -3,9 +3,10 @@
 #include "tags/Assign.hpp"
 #include "tags/Comment.hpp"
 #include "tags/For.hpp"
-#include "tags/If.hpp"
+#include "tags/Conditional.hpp"
 #include "tags/Capture.hpp"
 #include "tags/Case.hpp"
+#include "tags/Increment.hpp"
 
 namespace liquidpp
 {
@@ -29,6 +30,10 @@ std::shared_ptr<Tag> TagFactory::operator()(UnevaluatedTag&& tag) const
       return std::make_shared<Case>(std::move(tag));
    if (tag.name == "unless")
       return std::make_shared<Unless>(std::move(tag));
+   if (tag.name == "increment")
+      return std::make_shared<Increment>(std::move(tag));
+   if (tag.name == "decrement")
+      return std::make_shared<Decrement>(std::move(tag));
 
    return nullptr;
 }
