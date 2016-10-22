@@ -32,7 +32,7 @@ struct RangeDefinition
    }
 };
 
-struct Value {
+class Value {
 private:
    boost::variant<string_view, std::string, std::intmax_t, double, bool, RangeDefinition, ValueTag> data{ValueTag::Null};
 
