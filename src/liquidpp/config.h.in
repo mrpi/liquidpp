@@ -1,5 +1,7 @@
 #pragma once
 
+#include <vector>
+
 #include @LIQUIDPP_STRING_VIEW_HEADER@
 
 #cmakedefine LIQUIDPP_HAVE_RAPIDJSON
@@ -18,7 +20,7 @@ namespace liquidpp
    using SmallVector = boost::container::small_vector<T, S>
 #else
    template<typename T, size_t S>
-   using SmallVector = std::vector<T>
+   using SmallVector = std::vector<T>;
 #endif
    
    namespace literals
