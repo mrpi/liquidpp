@@ -29,6 +29,11 @@ struct Expression {
       {
          return name == other.name;
       }
+
+      bool operator!=(const VariableName& other) const
+      {
+         return name != other.name;
+      }
    };
 
    using RawTokens = SmallVector<string_view, 4>;
