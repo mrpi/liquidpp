@@ -487,6 +487,21 @@ TEST_CASE("Filter: strip")
    }
 }
 
+TEST_CASE("Filter: strip_html")
+{
+   liquidpp::Context c;
+
+   {
+      auto rendered = liquidpp::render(R"({{ "Have <em>you</em> read <strong>Ulysses</strong>?" | strip_html }})", c);
+      REQUIRE(rendered == "Have you read Ulysses?");
+   }
+
+   {
+      auto rendered = liquidpp::render(R"({{ "Have <em>you</em> read <!--Ulysses-->?" | strip_html }})", c);
+      REQUIRE(rendered == "Have you read ?");
+   }
+}
+
 TEST_CASE("Filter: strip_newlines")
 {
    liquidpp::Context c;
@@ -542,5 +557,20 @@ TEST_CASE("Filter: truncatewords")
    {
       auto rendered = liquidpp::render(R"({{ "Ground control to Major Tom." | truncatewords: 3, "" }})", c);
       REQUIRE(rendered == "Ground control to");
+   }
+}
+
+TEST_CASE("Filter: url_encode")
+{
+   liquidpp::Context c;
+
+   {
+      auto rendered = liquidpp::render(R"({{ "john@liquid.com" | url_encode }})", c);
+      REQUIRE(rendered == "john%40liquid.com");
+   }
+
+   {
+      auto rendered = liquidpp::render(R"({{ "Tetsuro Takara" | url_encode }})", c);
+      REQUIRE(rendered == "Tetsuro+Takara");
    }
 }

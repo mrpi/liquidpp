@@ -2,6 +2,7 @@
 
 #include "filters/Escape.hpp"
 #include "filters/Size.hpp"
+#include "filters/Date.hpp"
 #include "filters/Downcase.hpp"
 #include "filters/Upcase.hpp"
 #include "filters/Capitalize.hpp"
@@ -23,6 +24,8 @@
 #include "filters/StripNewlines.hpp"
 #include "filters/Truncate.hpp"
 #include "filters/TruncateWords.hpp"
+#include "filters/StripHtml.hpp"
+#include "filters/UrlEncode.hpp"
 
 namespace liquidpp
 {
@@ -39,7 +42,9 @@ std::shared_ptr<filters::Filter> FilterFactory::operator()(string_view name) con
       return std::make_shared<Capitalize>();
    if (name == "ceil")
       return makeFloatFilter( [](double d){ return std::ceil(d); } );
-   // TODO: Filter: date
+   // TODO: Filter: date (currently dummmy)
+   if (name == "date")
+      return std::make_shared<Date>();
    if (name == "default")
       return std::make_shared<Default>();
    if (name == "divided_by")
@@ -88,7 +93,8 @@ std::shared_ptr<filters::Filter> FilterFactory::operator()(string_view name) con
    // TODO: Filter: split
    if (name == "strip")
       return std::make_shared<Strip>();
-   // TODO: Filter: strip_html
+   if (name == "strip_html")
+      return std::make_shared<StripHtml>();
    if (name == "strip_newlines")
       return std::make_shared<StripNewlines>();
    if (name == "times")
@@ -100,7 +106,8 @@ std::shared_ptr<filters::Filter> FilterFactory::operator()(string_view name) con
    // TODO: Filter: uniq
    if (name == "upcase")
       return std::make_shared<Upcase>();
-   // TODO: Filter: url_encode
+   if (name == "url_encode")
+      return std::make_shared<UrlEncode>();
 
    return nullptr;
 }
