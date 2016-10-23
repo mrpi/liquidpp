@@ -10,7 +10,7 @@ namespace liquidpp
 
 struct Variable : public IRenderable {
    Expression::Token variable;
-   std::vector<std::shared_ptr<filters::Filter>> filterChain;
+   SmallVector<std::shared_ptr<filters::Filter>, 2> filterChain;
 
    Variable() = default;
 
@@ -25,51 +25,7 @@ struct Variable : public IRenderable {
          throw Exception("Variable definition without token!", data);
       variable = Expression::toToken(tokens[0]);
 
-      std::shared_ptr<filters::Filter> currentFilter;
-      bool newFilter = false;
-      auto tokenCount = tokens.size();
-      size_t attribIdx = 0;
-      for (size_t i=1; i < tokenCount; i++)
-      {
-         auto&& token = tokens[i];
-         if (token == "|")
-         {
-            if (newFilter)
-               throw std::runtime_error("Unexpected second pipe character");
-            newFilter = true;
-            if (currentFilter)
-               filterChain.push_back(std::move(currentFilter));
-         }
-         else if (newFilter)
-         {
-            currentFilter = filterFac(token);
-            if (currentFilter == nullptr)
-               throw Exception("Unknown filter!", token);
-            newFilter = false;
-         }
-         else
-         {
-            if (currentFilter)
-            {
-               if (attribIdx++ % 2)
-                  currentFilter->addAttribute(token);
-               else
-               {
-                  if (attribIdx == 1) {
-                     if (token != ":")
-                        throw Exception("Expected ':' operator!", token);
-                  }
-                  else if (token != ",")
-                     throw Exception("Expected ',' operator!", token);
-               }
-            }
-            else
-               throw Exception("Filter expression not starting with pipe symbol!", token);
-         }
-      }
-
-      if (currentFilter)
-         filterChain.push_back(std::move(currentFilter));
+      filterChain = Expression::toFilterChain(filterFac, tokens, 1);
    }
 
    bool operator==(const Variable& other) const;

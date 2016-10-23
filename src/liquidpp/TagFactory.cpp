@@ -11,14 +11,13 @@
 
 namespace liquidpp
 {
-std::shared_ptr<Tag> TagFactory::operator()(UnevaluatedTag&& tag) const
+
+std::shared_ptr<Tag> TagFactoryBase::operator()(UnevaluatedTag&& tag) const
 {
    if (tag.name == "for")
       return std::make_shared<For>(std::move(tag));
    if (tag.name == "if")
       return std::make_shared<If>(std::move(tag));
-   if (tag.name == "assign")
-      return std::make_shared<Assign>(std::move(tag));
    if (tag.name == "comment")
       return std::make_shared<Comment>(std::move(tag));
    if (tag.name == "capture")

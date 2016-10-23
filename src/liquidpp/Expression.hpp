@@ -2,6 +2,7 @@
 
 #include "ValueConverter.hpp"
 #include "config.h"
+#include "filters/Filter.hpp"
 
 namespace liquidpp {
 
@@ -38,17 +39,72 @@ struct Expression {
 
    using RawTokens = SmallVector<string_view, 4>;
    using Token = boost::variant<Operator, Value, VariableName>;
+   using FilterChain = SmallVector<std::shared_ptr<filters::Filter>, 2>;
 
    static bool matches(const Value& left, Operator operator_, const Value& right);
    static RawTokens splitTokens(string_view sequence);
    static Token toToken(string_view tokenStr);
    static Expression fromSequence(string_view sequence);
-   static Value value(const Context& c, const Token& t);
+   static Value value(Context& c, const Token& t, boost::optional<const FilterChain&> filterChain = boost::none);
    static bool isInteger(string_view sv);
    static bool isFloat(string_view sv);
    static bool isWhitespace(char c);
 
    Value operator()(Context& c) const;
+
+   template<typename FilterFactoryT>
+   static FilterChain toFilterChain(const FilterFactoryT& filterFac, const RawTokens& tokens, size_t offset)
+   {
+      FilterChain filterChain;
+
+      std::shared_ptr<filters::Filter> currentFilter;
+      bool newFilter = false;
+      auto tokenCount = tokens.size();
+      size_t attribIdx = 0;
+      for (size_t i=offset; i < tokenCount; i++)
+      {
+         auto&& token = tokens[i];
+         if (token == "|")
+         {
+            if (newFilter)
+               throw std::runtime_error("Unexpected second pipe character");
+            newFilter = true;
+            if (currentFilter)
+               filterChain.push_back(std::move(currentFilter));
+         }
+         else if (newFilter)
+         {
+            currentFilter = filterFac(token);
+            if (currentFilter == nullptr)
+               throw Exception("Unknown filter!", token);
+            newFilter = false;
+         }
+         else
+         {
+            if (currentFilter)
+            {
+               if (attribIdx++ % 2)
+                  currentFilter->addAttribute(token);
+               else
+               {
+                  if (attribIdx == 1) {
+                     if (token != ":")
+                        throw Exception("Expected ':' operator!", token);
+                  }
+                  else if (token != ",")
+                     throw Exception("Expected ',' operator!", token);
+               }
+            }
+            else
+               throw Exception("Filter expression not starting with pipe symbol!", token);
+         }
+      }
+
+      if (currentFilter)
+         filterChain.push_back(std::move(currentFilter));
+
+      return filterChain;
+   }
 
    std::vector<Token> tokens;
 };

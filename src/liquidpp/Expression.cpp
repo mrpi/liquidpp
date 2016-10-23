@@ -3,6 +3,8 @@
 #include "Context.hpp"
 #include "Exception.hpp"
 
+#include "filters/Filter.hpp"
+
 namespace liquidpp
 {
 
@@ -313,19 +315,29 @@ Expression Expression::fromSequence(string_view sequence)
    return res;
 }
 
-Value Expression::value(const Context& c, const Token& t)
+Value Expression::value(Context& c, const Token& t, boost::optional<const FilterChain&> filterChain)
 {
+   Value res;
+
    switch(t.which())
    {
       case 0:
          throw std::runtime_error("Expected value or variable but got operator!");
       case 1:
-         return boost::get<Value>(t);
+         res = boost::get<Value>(t);
+         break;
       case 2:
-         return c.get(boost::get<VariableName>(t).name);
+         res = c.get(boost::get<VariableName>(t).name);
+         break;
    }
 
-   throw std::runtime_error("Invalid state!");
+   if (filterChain)
+   {
+      for (auto&& filter : *filterChain)
+         res = (*filter)(c, std::move(res));
+   }
+
+   return res;
 }
 
 bool Expression::matches(const Value& left, Operator operator_, const Value& right)

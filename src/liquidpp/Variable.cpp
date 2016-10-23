@@ -14,10 +14,7 @@ bool Variable::operator==(const Variable& other) const {
 }
 
 void Variable::render(Context& context, std::string& out) const {
-   auto&& val = Expression::value(context, variable);
-
-   for (auto&& filter : filterChain)
-      val = (*filter)(context, std::move(val));
+   auto&& val = Expression::value(context, variable, filterChain);
 
    if (val.isStringViewRepresentable())
    {

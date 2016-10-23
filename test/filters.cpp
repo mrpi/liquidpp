@@ -214,16 +214,12 @@ TEST_CASE("Filter: divided_by")
       REQUIRE(rendered == expected);
    }
 
-#ifdef TODO
    {
-      auto rendered = liquidpp::render(R"({% assign my_integer = 7 %}
-{% assign my_float = my_integer | times: 1.0 %}
+      auto rendered = liquidpp::render(R"({% assign my_integer = 7 -%}
+{% assign my_float = my_integer | times: 1.0 -%}
 {{ 20 | divided_by: my_float }})", c);
-      auto expected = R"(
-2.857142857142857)";
-      REQUIRE(rendered == expected);
+      REQUIRE(rendered == "2.857142857142857");
    }
-#endif // TODO
 }
 
 TEST_CASE("Filter: times")

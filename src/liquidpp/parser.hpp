@@ -148,7 +148,7 @@ BlockBody buildBlocks(Iterator& itr, const Iterator& end, const std::string& end
          if (rawTag.name == endTagName)
             break;
 
-         auto tag = TagFactoryT{}(std::move(rawTag));
+         auto tag = TagFactoryT{}(FilterFactoryT{}, std::move(rawTag));
          if (tag) {
             auto block = dynamic_cast<Block*>(tag.get());
             if (block)
