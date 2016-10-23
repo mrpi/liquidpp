@@ -33,7 +33,7 @@ struct Slice : public Filter
       }
    }
 
-   virtual void addAttribute(string_view sv)
+   virtual void addAttribute(string_view sv) override final
    {
       if (startIdxToken == Expression::Token{})
          startIdxToken = Expression::toToken(sv);

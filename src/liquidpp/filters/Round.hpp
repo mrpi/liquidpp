@@ -26,7 +26,7 @@ struct Round : public Filter
       return oss.str();
    }
 
-   virtual void addAttribute(string_view sv)
+   virtual void addAttribute(string_view sv) override final
    {
       token = Expression::toToken(sv);
    }

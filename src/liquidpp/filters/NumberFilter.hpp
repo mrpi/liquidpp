@@ -102,7 +102,7 @@ struct NumberFilter1Arg : public Filter
       return apply(std::move(val), *val);
    }
 
-   virtual void addAttribute(string_view sv)
+   virtual void addAttribute(string_view sv) override final
    {
       token = Expression::toToken(sv);
    }

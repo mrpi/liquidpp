@@ -25,7 +25,7 @@ struct ReplaceFirst : public Filter
       return std::move(str);
    }
 
-   virtual void addAttribute(string_view sv)
+   virtual void addAttribute(string_view sv) override final
    {
       if (toRemoveToken == Expression::Token{})
          toRemoveToken = Expression::toToken(sv);

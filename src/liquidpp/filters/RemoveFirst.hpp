@@ -23,7 +23,7 @@ struct RemoveFirst : public Filter
       return std::move(str);
    }
 
-   virtual void addAttribute(string_view sv)
+   virtual void addAttribute(string_view sv) override final
    {
       toRemoveToken = Expression::toToken(sv);
    }

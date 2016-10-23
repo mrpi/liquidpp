@@ -18,7 +18,7 @@ struct Prepend : public Filter
       return Expression::value(c, prefix).toString() + str;
    }
 
-   virtual void addAttribute(string_view sv)
+   virtual void addAttribute(string_view sv) override final
    {
       prefix = Expression::toToken(sv);
    }
