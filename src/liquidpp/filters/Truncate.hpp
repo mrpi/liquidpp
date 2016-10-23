@@ -25,7 +25,7 @@ struct Truncate : public Filter
          return std::move(val);
 
       std::string ellips = "...";
-      if (ellipsisToken != Expression::Token{})
+      if (!(ellipsisToken == Expression::Token{}))
          ellips = Expression::value(c, ellipsisToken).toString();
 
       return sv.substr(0, maxCount - ellips.size()).to_string() + ellips;

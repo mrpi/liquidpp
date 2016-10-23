@@ -26,7 +26,7 @@ struct TruncateWords : public Filter
       size_t wordCount = 0;
       size_t maxWordCount = Expression::value(c, maxWordCountToken).integralValue();
       std::string ellips = "...";
-      if (ellipsisToken != Expression::Token{})
+      if (!(ellipsisToken == Expression::Token{}))
          ellips = Expression::value(c, ellipsisToken).toString();
 
       bool lastWasWhitespace = true;
