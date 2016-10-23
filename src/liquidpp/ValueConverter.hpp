@@ -116,7 +116,7 @@ public:
    bool isNil() const {
       if (isValueTag()) {
          auto tagVal = boost::get<ValueTag>(data);
-         if (tagVal == ValueTag::Null || tagVal == ValueTag::OutOfRange)
+         if (tagVal == ValueTag::Null || tagVal == ValueTag::OutOfRange || tagVal == ValueTag::SubValue)
             return true;
       }
       return false;
@@ -391,7 +391,12 @@ struct ValueConverter<std::vector<ValueT>> : public std::true_type {
       return [vec = std::forward<T>(vec)](OptIndex idx, string_view path) -> Value
       {
          if (!idx)
+         {
+            if (!path.empty())
+               return ValueTag::SubValue;
+
             return RangeDefinition{vec.size()};
+         }
          if (*idx < vec.size())
             return elementToValue(vec[*idx], boost::none, path);
          return ValueTag::OutOfRange;

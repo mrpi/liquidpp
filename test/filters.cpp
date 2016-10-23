@@ -27,6 +27,16 @@ TEST_CASE("Filter: size")
       auto rendered = liquidpp::render(R"({{ "Ground control to Major Tom." | size }})", c);
       REQUIRE(rendered == "28");
    }
+
+   {
+      std::map<std::string, std::vector<int>> m{{"pages", {0,1,2,3,4,5,6,7,8,9,10}}};
+      c.set("site", m);
+
+      auto rendered = liquidpp::render(R"({% if site.pages.size > 10 -%}
+  This is a big website!
+{%- endif %})", c);
+      REQUIRE(rendered == "This is a big website!");
+   }
 }
 
 TEST_CASE("Filter: downcase")

@@ -57,7 +57,21 @@ public:
       auto itr = mValues.find(key.name);
       if (itr != mValues.end()) {
          if (itr->second.which() == 1)
-            return boost::get<ValueGetter>(itr->second)(key.idx, path);
+         {
+            auto res = boost::get<ValueGetter>(itr->second)(key.idx, path);
+            if (res == ValueTag::SubValue)
+            {
+               Value parent;
+               if (path == "size")
+                  parent = boost::get<ValueGetter>(itr->second)(key.idx, path);
+               else if (path.size() > 5 && path.substr(path.size()-5) == ".size")
+                  parent = boost::get<ValueGetter>(itr->second)(key.idx, path.substr(0, path.size()-5));
+
+               if (parent)
+                  return toValue(parent.size());
+            }
+            return std::move(res);
+         }
 
          if (key.idx)
             return ValueTag::SubValue;

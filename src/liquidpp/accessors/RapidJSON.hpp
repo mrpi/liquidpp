@@ -35,7 +35,7 @@ struct ValueConverter<rapidjson::GenericValue<Encoding, Allocator>> : public std
          while (auto key = popKey(path))
          {
             if (!v->IsObject())
-               return ValueTag::Null;
+               return ValueTag::SubValue;
 
             auto toRJString = [](auto str){
                return rapidjson::StringRef(str.data(), str.size());
