@@ -41,4 +41,4 @@ add_library (liquidpp STATIC
         liquidpp/filters/Strip.hpp
         liquidpp/filters/StripNewlines.hpp
         liquidpp/tags/Case.hpp liquidpp/tags/Case.cpp
-        liquidpp/tags/Increment.hpp liquidpp/tags/Cycle.hpp)
+        liquidpp/tags/Increment.hpp liquidpp/tags/Cycle.hpp liquidpp/filters/TruncateWords.hpp liquidpp/filters/Truncate.hpp)

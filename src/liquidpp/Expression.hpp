@@ -41,6 +41,7 @@ struct Expression {
    static Value value(const Context& c, const Token& t);
    static bool isInteger(string_view sv);
    static bool isFloat(string_view sv);
+   static bool isWhitespace(char c);
 
    Value operator()(Context& c) const;
 

@@ -504,3 +504,43 @@ Hellothere)";
       REQUIRE(rendered == expected);
    }
 }
+
+TEST_CASE("Filter: truncate")
+{
+   liquidpp::Context c;
+
+   {
+      auto rendered = liquidpp::render(R"({{ "Ground control to Major Tom." | truncate: 20 }})", c);
+      REQUIRE(rendered == "Ground control to...");
+   }
+
+   {
+      auto rendered = liquidpp::render(R"({{ "Ground control to Major Tom." | truncate: 25, ", and so on" }})", c);
+      REQUIRE(rendered == "Ground control, and so on");
+   }
+
+   {
+      auto rendered = liquidpp::render(R"({{ "Ground control to Major Tom." | truncate: 20, "" }})", c);
+      REQUIRE(rendered == "Ground control to Ma");
+   }
+}
+
+TEST_CASE("Filter: truncatewords")
+{
+   liquidpp::Context c;
+
+   {
+      auto rendered = liquidpp::render(R"({{ "Ground control to Major Tom." | truncatewords: 3 }})", c);
+      REQUIRE(rendered == "Ground control to...");
+   }
+
+   {
+      auto rendered = liquidpp::render(R"({{ "Ground control to Major Tom." | truncatewords: 3, "--" }})", c);
+      REQUIRE(rendered == "Ground control to--");
+   }
+
+   {
+      auto rendered = liquidpp::render(R"({{ "Ground control to Major Tom." | truncatewords: 3, "" }})", c);
+      REQUIRE(rendered == "Ground control to");
+   }
+}

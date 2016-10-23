@@ -21,6 +21,8 @@
 #include "filters/Slice.hpp"
 #include "filters/Strip.hpp"
 #include "filters/StripNewlines.hpp"
+#include "filters/Truncate.hpp"
+#include "filters/TruncateWords.hpp"
 
 namespace liquidpp
 {
@@ -91,8 +93,10 @@ std::shared_ptr<filters::Filter> FilterFactory::operator()(string_view name) con
       return std::make_shared<StripNewlines>();
    if (name == "times")
       return makeNumberFilter1Arg( [](auto d, auto arg){ return d * arg; } );
-   // TODO: Filter: truncate
-   // TODO: Filter: truncatewords
+   if (name == "truncate")
+      return std::make_shared<Truncate>();
+   if (name == "truncatewords")
+      return std::make_shared<TruncateWords>();
    // TODO: Filter: uniq
    if (name == "upcase")
       return std::make_shared<Upcase>();

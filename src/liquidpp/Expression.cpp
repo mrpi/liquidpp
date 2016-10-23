@@ -30,9 +30,7 @@ boost::optional<Expression::Operator> Expression::toOperator(string_view operato
    return boost::none;
 }
 
-namespace
-{
-inline bool isWhitespace(char c) {
+bool Expression::isWhitespace(char c) {
    if (c == ' ')
       return true;
    if (c == '\t')
@@ -44,6 +42,8 @@ inline bool isWhitespace(char c) {
    return false;
 }
 
+namespace
+{
 inline bool isOperatorChar(char c) {
    if (c == '=')
       return true;
