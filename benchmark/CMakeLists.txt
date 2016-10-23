@@ -16,3 +16,9 @@ add_executable (liquidppBenchmark
 target_link_libraries (liquidppBenchmark
                        liquidpp
                        pthread)
+
+add_executable (benchmarkFiles
+        benchmarkFiles.cpp)
+
+target_link_libraries (benchmarkFiles
+        liquidpp)
