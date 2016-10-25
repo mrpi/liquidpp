@@ -42,7 +42,6 @@ std::shared_ptr<filters::Filter> FilterFactory::operator()(string_view name) con
       return std::make_shared<Capitalize>();
    if (name == "ceil")
       return makeFloatFilter( [](double d){ return std::ceil(d); } );
-   // TODO: Filter: date (currently dummmy)
    if (name == "date")
       return std::make_shared<Date>();
    if (name == "default")
@@ -53,7 +52,8 @@ std::shared_ptr<filters::Filter> FilterFactory::operator()(string_view name) con
       return std::make_shared<Downcase>();
    if (name == "escape")
       return std::make_shared<Escape>();
-   // TODO: Filter: escape_once
+   if (name == "escape_once")
+      return std::make_shared<EscapeOnce>();
    // TODO: Filter: first
    if (name == "floor")
       return makeFloatFilter( [](double d){ return std::floor(d); } );

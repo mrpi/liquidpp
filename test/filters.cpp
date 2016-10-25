@@ -296,7 +296,6 @@ TEST_CASE("Filter: times")
    }
 }
 
-#if TODO
 TEST_CASE("Filter: escape_once")
 {
    liquidpp::Context c;
@@ -311,7 +310,6 @@ TEST_CASE("Filter: escape_once")
       REQUIRE(rendered == "1 &lt; 2 &amp; 3");
    }
 }
-#endif
 
 TEST_CASE("Filter: lstrip")
 {
