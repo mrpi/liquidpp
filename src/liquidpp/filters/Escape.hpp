@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Filter.hpp"
+#include "../Expression.hpp"
 
 namespace liquidpp
 {
@@ -50,16 +51,16 @@ struct Escape : public Filter
 
 struct EscapeOnce : public Filter
 {
-   static bool isStartValidOfEscapeSequence(string_view s)
+   static bool isStartOfValidEscapeSequence(string_view s)
    {
       if (s.size() < 3)
          return false;
 
-      if (std::isalpha(s[1]))
+      if (Expression::isAsciiAlpha(s[1]))
       {
          for (auto c : s.substr(2))
          {
-            if (std::isalpha(c))
+            if (Expression::isAsciiAlpha(c))
                continue;
             if (c == ';')
                return true;
@@ -103,7 +104,7 @@ struct EscapeOnce : public Filter
                res += "&gt;";
                break;
             case '&':
-               if (isStartValidOfEscapeSequence(sv))
+               if (isStartOfValidEscapeSequence(sv))
                   res += c;
                else
                   res += "&amp;";

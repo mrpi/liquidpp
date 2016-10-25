@@ -26,6 +26,11 @@
 #include "filters/TruncateWords.hpp"
 #include "filters/StripHtml.hpp"
 #include "filters/UrlEncode.hpp"
+#include "filters/Split.hpp"
+#include "filters/Join.hpp"
+#include "filters/Sort.hpp"
+#include "filters/Reverse.hpp"
+#include "filters/Uniq.hpp"
 
 namespace liquidpp
 {
@@ -54,11 +59,10 @@ std::shared_ptr<filters::Filter> FilterFactory::operator()(string_view name) con
       return std::make_shared<Escape>();
    if (name == "escape_once")
       return std::make_shared<EscapeOnce>();
-   // TODO: Filter: first
    if (name == "floor")
       return makeFloatFilter( [](double d){ return std::floor(d); } );
-   // TODO: Filter: join
-   // TODO: Filter: last
+   if (name == "join")
+      return std::make_shared<Join>();
    if (name == "lstrip")
       return std::make_shared<Lstrip>();
    // TODO: Filter: map
@@ -80,7 +84,8 @@ std::shared_ptr<filters::Filter> FilterFactory::operator()(string_view name) con
       return std::make_shared<Replace>();
    if (name == "replace_first")
       return std::make_shared<ReplaceFirst>();
-   // TODO: Filter: reverse
+   if (name == "reverse")
+      return std::make_shared<Reverse>();
    if (name == "round")
       return std::make_shared<Round>();
    if (name == "rstrip")
@@ -89,8 +94,10 @@ std::shared_ptr<filters::Filter> FilterFactory::operator()(string_view name) con
       return std::make_shared<Size>();
    if (name == "slice")
       return std::make_shared<Slice>();
-   // TODO: Filter: sort
-   // TODO: Filter: split
+   if (name == "sort")
+      return std::make_shared<Sort>();
+   if (name == "split")
+      return std::make_shared<Split>();
    if (name == "strip")
       return std::make_shared<Strip>();
    if (name == "strip_html")
@@ -103,7 +110,8 @@ std::shared_ptr<filters::Filter> FilterFactory::operator()(string_view name) con
       return std::make_shared<Truncate>();
    if (name == "truncatewords")
       return std::make_shared<TruncateWords>();
-   // TODO: Filter: uniq
+   if (name == "uniq")
+      return std::make_shared<Uniq>();
    if (name == "upcase")
       return std::make_shared<Upcase>();
    if (name == "url_encode")

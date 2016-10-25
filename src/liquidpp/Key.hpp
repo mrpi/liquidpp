@@ -48,4 +48,19 @@ namespace liquidpp
 
       return res;
    }
+
+   inline string_view popLastKey(string_view& path)
+   {
+      auto pos = path.find_last_of(".");
+      if (pos == std::string::npos)
+      {
+         auto res = path;
+         path = string_view{};
+         return res;
+      }
+
+      auto res = path.substr(pos+1);
+      path.remove_suffix(res.size());
+      return res;
+   }
 }

@@ -45,10 +45,14 @@ struct Expression {
    static RawTokens splitTokens(string_view sequence);
    static Token toToken(string_view tokenStr);
    static Expression fromSequence(string_view sequence);
+
    static Value value(Context& c, const Token& t, boost::optional<const FilterChain&> filterChain = boost::none);
+   static std::tuple<Value, std::string> value(Context& c, const RangeDefinition& range, size_t i, string_view basePath);
+
    static bool isInteger(string_view sv);
    static bool isFloat(string_view sv);
    static bool isWhitespace(char c);
+   static bool isAsciiAlpha(char c);
 
    Value operator()(Context& c) const;
 
@@ -75,6 +79,7 @@ struct Expression {
          else if (newFilter)
          {
             currentFilter = filterFac(token);
+            attribIdx = 0;
             if (currentFilter == nullptr)
                throw Exception("Unknown filter!", token);
             newFilter = false;

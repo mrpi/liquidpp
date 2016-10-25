@@ -23,12 +23,93 @@ enum class ValueTag {
    SubValue
 };
 
-struct RangeDefinition
+class RangeDefinition
 {
-   size_t size;
+public:
+   using GaplessIndices = std::pair<size_t, size_t>;
+   using AvailableIndices = SmallVector<size_t, 8>;
+   using InlineValues = SmallVector<std::string, 4>;
+
+private:
+   boost::variant<GaplessIndices, AvailableIndices, InlineValues> data;
+
+public:
+   explicit RangeDefinition(size_t size)
+    : data{ GaplessIndices{0, size} }
+   {
+   }
+
+   // Use this constructor if your range does not start naturally with index 0
+   // (or if you are working on a sub range)
+   RangeDefinition(size_t beginIdx, size_t endIdx)
+      : data{ GaplessIndices{beginIdx, endIdx} }
+   {
+      assert(beginIdx >= endIdx);
+   }
+
+   explicit RangeDefinition(AvailableIndices availableIndices)
+      : data{ std::move(availableIndices) }
+   {
+   }
+
+   explicit RangeDefinition(InlineValues inlineValues)
+      : data{ std::move(inlineValues) }
+   {
+   }
+
+   const std::string& inlineValue(size_t i) const
+   {
+      return boost::get<InlineValues>(data)[i];
+   }
+
+   const InlineValues& inlineValues() const
+   {
+      return boost::get<InlineValues>(data);
+   }
+
+   InlineValues& inlineValues()
+   {
+      return boost::get<InlineValues>(data);
+   }
+
+   bool usesInlineValues() const
+   {
+      return data.which() == 2;
+   }
+
+   size_t index(size_t i) const
+   {
+      switch (data.which())
+      {
+         case 0:
+            return boost::get<GaplessIndices>(data).first + i;
+         case 1:
+            return boost::get<AvailableIndices>(data)[i];
+      }
+
+      throw std::runtime_error("This range has no index type (inline values)!");
+   }
+
+   size_t size() const
+   {
+      switch (data.which())
+      {
+         case 0:
+         {
+            auto&& r = boost::get<GaplessIndices>(data);
+            return r.second - r.first;
+         }
+         case 1:
+            return boost::get<AvailableIndices>(data).size();
+         case 2:
+            return boost::get<InlineValues>(data).size();
+      }
+
+      throw std::runtime_error("Invalid state (unknown range type)!");
+   }
 
    bool operator==(const RangeDefinition& other) const {
-      return size == other.size;
+      return data == other.data;
    }
 };
 
@@ -92,9 +173,17 @@ public:
       return data.which() == 5;
    }
 
+   const RangeDefinition& range() const {
+      return boost::get<RangeDefinition>(data);
+   }
+
+   RangeDefinition& range() {
+      return boost::get<RangeDefinition>(data);
+   }
+
    size_t size() const {
       if (isRange())
-         return boost::get<RangeDefinition>(data).size;
+         return boost::get<RangeDefinition>(data).size();
       if (isStringViewRepresentable())
       {
          string_view sv = **this;

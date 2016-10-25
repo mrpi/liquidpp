@@ -61,14 +61,29 @@ public:
             auto res = boost::get<ValueGetter>(itr->second)(key.idx, path);
             if (res == ValueTag::SubValue)
             {
-               Value parent;
-               if (path == "size")
-                  parent = boost::get<ValueGetter>(itr->second)(key.idx, path);
-               else if (path.size() > 5 && path.substr(path.size()-5) == ".size")
-                  parent = boost::get<ValueGetter>(itr->second)(key.idx, path.substr(0, path.size()-5));
+               auto lastKey = popLastKey(path);
 
-               if (parent)
+               if (lastKey == "size")
+               {
+                  Value parent = boost::get<ValueGetter>(itr->second)(key.idx, path);
                   return toValue(parent.size());
+               }
+
+               if (lastKey == "first" || lastKey == "last")
+               {
+                  Value parent = boost::get<ValueGetter>(itr->second)(key.idx, path);
+                  if (parent.isRange())
+                  {
+                     auto& range = parent.range();
+                     auto size = range.size();
+                     if (size == 0)
+                        return ValueTag::Null;
+                     auto idx = range.index(lastKey == "last" ? size-1 : 0);
+                     if (!key.idx && path.empty())
+                        return boost::get<ValueGetter>(itr->second)(idx, path);
+                     return boost::get<ValueGetter>(itr->second)(key.idx, path.to_string() + '[' + boost::lexical_cast<std::string>(idx) + ']');
+                  }
+               }
             }
             return std::move(res);
          }

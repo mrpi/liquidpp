@@ -122,10 +122,7 @@ void For::render(Context& context, std::string& res) const {
       else if (val.isSimpleValue())
          return std::make_tuple(val, std::string{});
       else if (val.isRange())
-      {
-         std::string idxPath = rangeVariable + '[' + boost::lexical_cast<std::string>(i) + ']';
-         return std::make_tuple(context.get(idxPath), idxPath);
-      }
+         return Expression::value(context, val.range(), i, rangeVariable);
 
       return std::make_tuple(Value{ValueTag::OutOfRange}, std::string{});
    };

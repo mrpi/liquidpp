@@ -44,6 +44,15 @@ bool Expression::isWhitespace(char c) {
    return false;
 }
 
+bool Expression::isAsciiAlpha(char c)
+{
+   if (c >= 'a' && c <= 'z')
+      return true;
+   if (c >= 'A' && c <= 'Z')
+      return true;
+   return false;
+}
+
 namespace
 {
 inline bool isOperatorChar(char c) {
@@ -315,9 +324,39 @@ Expression Expression::fromSequence(string_view sequence)
    return res;
 }
 
+std::tuple<Value, std::string> Expression::value(Context& c, const RangeDefinition& range, size_t i, string_view basePath)
+{
+   assert(i < range.size());
+
+   if (range.usesInlineValues())
+      return std::make_tuple(Value{range.inlineValue(i)}, std::string{});
+   else
+   {
+      auto subPath = basePath.to_string() + '[' + boost::lexical_cast<std::string>(range.index(i)) + ']';
+      return std::make_tuple(c.get(subPath), subPath);
+   }
+}
+
+namespace
+{
+RangeDefinition inlineRangeValues(Context& c, RangeDefinition&& r, string_view basePath)
+{
+   if (r.usesInlineValues())
+      return std::move(r);
+
+   RangeDefinition::InlineValues res;
+   res.reserve(r.size());
+   for (size_t i=0; i < r.size(); i++)
+      res.push_back(std::get<0>(Expression::value(c, r, i, basePath)).toString());
+
+   return RangeDefinition{std::move(res)};
+}
+}
+
 Value Expression::value(Context& c, const Token& t, boost::optional<const FilterChain&> filterChain)
 {
    Value res;
+   string_view variableName;
 
    switch(t.which())
    {
@@ -327,14 +366,20 @@ Value Expression::value(Context& c, const Token& t, boost::optional<const Filter
          res = boost::get<Value>(t);
          break;
       case 2:
-         res = c.get(boost::get<VariableName>(t).name);
+         variableName = boost::get<VariableName>(t).name;
+         res = c.get(variableName);
          break;
    }
 
    if (filterChain)
    {
       for (auto&& filter : *filterChain)
+      {
+         if (res.isRange())
+            res = inlineRangeValues(c, std::move(res.range()), variableName);
+
          res = (*filter)(c, std::move(res));
+      }
    }
 
    return res;

@@ -622,3 +622,154 @@ TEST_CASE("Filter: url_encode")
       REQUIRE(rendered == "Tetsuro+Takara");
    }
 }
+
+TEST_CASE("Filter: split")
+{
+   liquidpp::Context c;
+
+   {
+      auto templ = R"({% assign beatles = "John, Paul, George, Ringo" | split: ", " %}
+
+{% for member in beatles %}
+  {{ member }}
+{% endfor %})";
+      auto rendered = liquidpp::render(templ, c);
+      auto expected = R"(
+
+
+  John
+
+  Paul
+
+  George
+
+  Ringo
+)";
+      REQUIRE(rendered == expected);
+   }
+}
+
+TEST_CASE("Filter: join")
+{
+   liquidpp::Context c;
+
+   {
+      auto templ = R"({% assign beatles = "John, Paul, George, Ringo" | split: ", " %}
+
+{{ beatles | join: " and " }})";
+      auto rendered = liquidpp::render(templ, c);
+      auto expected = R"(
+
+John and Paul and George and Ringo)";
+      REQUIRE(rendered == expected);
+   }
+}
+
+TEST_CASE("Filter: first")
+{
+   liquidpp::Context c;
+
+   {
+      auto templ = R"({% assign my_array = "apples, oranges, peaches, plums" | split: ", " %}
+
+{{ my_array.first }})";
+      auto rendered = liquidpp::render(templ, c);
+      auto expected = R"(
+
+apples)";
+      REQUIRE(rendered == expected);
+   }
+
+   {
+      auto templ = R"({% assign my_array = "zebra, octopus, giraffe, tiger" | split: ", " %}
+
+{{ my_array.first }})";
+      auto rendered = liquidpp::render(templ, c);
+      auto expected = R"(
+
+zebra)";
+      REQUIRE(rendered == expected);
+   }
+}
+
+TEST_CASE("Filter: last")
+{
+   liquidpp::Context c;
+
+   {
+      auto templ = R"({% assign my_array = "apples, oranges, peaches, plums" | split: ", " %}
+
+{{ my_array.last }})";
+      auto rendered = liquidpp::render(templ, c);
+      auto expected = R"(
+
+plums)";
+      REQUIRE(rendered == expected);
+   }
+
+   {
+      auto templ = R"({% assign my_array = "zebra, octopus, giraffe, tiger" | split: ", " %}
+
+{{ my_array.last }})";
+      auto rendered = liquidpp::render(templ, c);
+      auto expected = R"(
+
+tiger)";
+      REQUIRE(rendered == expected);
+   }
+}
+
+TEST_CASE("Filter: sort")
+{
+   liquidpp::Context c;
+
+   {
+      auto templ = R"({% assign my_array = "zebra, octopus, giraffe, Sally Snake" | split: ", " %}
+
+{{ my_array | sort | join: ", " }})";
+      auto rendered = liquidpp::render(templ, c);
+      auto expected = R"(
+
+Sally Snake, giraffe, octopus, zebra)";
+      REQUIRE(rendered == expected);
+   }
+}
+
+TEST_CASE("Filter: reverse")
+{
+   liquidpp::Context c;
+
+   {
+      auto templ = R"({% assign my_array = "apples, oranges, peaches, plums" | split: ", " %}
+
+{{ my_array | reverse | join: ", " }})";
+      auto rendered = liquidpp::render(templ, c);
+      auto expected = R"(
+
+plums, peaches, oranges, apples)";
+      REQUIRE(rendered == expected);
+   }
+
+   {
+      auto templ = R"({{ "Ground control to Major Tom." | split: "" | reverse | join: "" }})";
+      auto rendered = liquidpp::render(templ, c);
+      auto expected = R"(.moT rojaM ot lortnoc dnuorG)";
+      REQUIRE(rendered == expected);
+   }
+}
+
+TEST_CASE("Filter: uniq")
+{
+   liquidpp::Context c;
+
+   {
+      auto templ = R"({% assign my_array = "ants, bugs, bees, bugs, ants" | split: ", " %}
+
+{{ my_array | uniq | join: ", " }})";
+      auto rendered = liquidpp::render(templ, c);
+      auto expected = R"(
+
+ants, bugs, bees)";
+      REQUIRE(rendered == expected);
+   }
+}
