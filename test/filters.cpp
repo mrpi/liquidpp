@@ -2,6 +2,8 @@
 
 #include <liquidpp.hpp>
 
+#include <regex>
+
 using namespace liquidpp::literals;
 
 TEST_CASE("Filter: escape")
@@ -36,6 +38,48 @@ TEST_CASE("Filter: size")
   This is a big website!
 {%- endif %})", c);
       REQUIRE(rendered == "This is a big website!");
+   }
+}
+
+TEST_CASE("Filter: date")
+{
+   liquidpp::Context c;
+   c.set("article", std::map<std::string, std::string>{
+      {"published_at", "2015-07-17 13:14:15"},
+      {"published_at1", "2015-07-17 13:14"},
+      {"published_at2", "2015-07-17"}
+   });
+
+   {
+      auto rendered = liquidpp::render(R"({{ article.published_at | date: "%a, %b %d, %y" }})", c);
+      REQUIRE(rendered == "Fri, Jul 17, 15");
+   }
+
+   {
+      auto rendered = liquidpp::render(R"({{ article.published_at1 | date: "%a, %b %d, %y" }})", c);
+      REQUIRE(rendered == "Fri, Jul 17, 15");
+   }
+
+   {
+      auto rendered = liquidpp::render(R"({{ article.published_at2 | date: "%a, %b %d, %y" }})", c);
+      REQUIRE(rendered == "Fri, Jul 17, 15");
+   }
+
+   {
+      auto rendered = liquidpp::render(R"({{ article.published_at | date: "%Y" }})", c);
+      REQUIRE(rendered == "2015");
+   }
+
+   {
+      auto rendered = liquidpp::render(R"({{ "March 14, 2016" | date: "%b %d, %y" }})", c);
+      REQUIRE(rendered == "Mar 14, 16");
+   }
+
+   {
+      auto rendered = liquidpp::render(R"(This page was last updated at {{ "now" | date: "%Y-%m-%d %H:%M" }}.)", c);
+      std::regex rx("This page was last updated at [0-9]{4}-[0-9][0-9]-[0-9][0-9] [0-9][0-9]:[0-9][0-9].");
+      if (!std::regex_match(rendered, rx))
+         FAIL("Rendered did not match expression: " << rendered);
    }
 }
 
