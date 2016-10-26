@@ -32,6 +32,7 @@ public:
 
 private:
    boost::variant<GaplessIndices, AvailableIndices, InlineValues> data;
+   boost::optional<string_view> mRangePath;
 
 public:
    explicit RangeDefinition(size_t size)
@@ -52,14 +53,24 @@ public:
    {
    }
 
-   explicit RangeDefinition(InlineValues inlineValues)
-      : data{ std::move(inlineValues) }
+   explicit RangeDefinition(InlineValues inlineValues, string_view rangePath = string_view{})
+      : data{ std::move(inlineValues) }, mRangePath{rangePath}
    {
    }
 
    const std::string& inlineValue(size_t i) const
    {
       return boost::get<InlineValues>(data)[i];
+   }
+
+   boost::optional<string_view> rangePath() const
+   {
+      return mRangePath;
+   }
+
+   void setRangePath(string_view val)
+   {
+      mRangePath = val;
    }
 
    const InlineValues& inlineValues() const
@@ -455,6 +466,8 @@ struct AssociativeContainerConverter : public std::true_type {
       idx, string_view
       path) -> Value
       {
+         if (path.empty())
+            return ValueTag::Object;
          auto key = popKey(path);
          auto itr = map.find(boost::lexical_cast<KeyT>(key.name));
          if (itr != map.end())

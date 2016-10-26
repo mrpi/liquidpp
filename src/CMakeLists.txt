@@ -28,7 +28,6 @@ add_library (liquidpp STATIC
         liquidpp/filters/Default.hpp
         liquidpp/filters/FloatFilter.hpp
         liquidpp/filters/Lstrip.hpp
-        liquidpp/filters/Modulo.hpp
         liquidpp/tags/Capture.hpp liquidpp/tags/Capture.cpp
         liquidpp/filters/NewlineToBr.hpp liquidpp/filters/Prepend.hpp
         liquidpp/filters/Remove.hpp
@@ -41,4 +40,4 @@ add_library (liquidpp STATIC
         liquidpp/filters/Strip.hpp
         liquidpp/filters/StripNewlines.hpp
         liquidpp/tags/Case.hpp liquidpp/tags/Case.cpp
-        liquidpp/tags/Increment.hpp liquidpp/tags/Cycle.hpp liquidpp/filters/TruncateWords.hpp liquidpp/filters/Truncate.hpp liquidpp/filters/Date.hpp liquidpp/filters/StripHtml.hpp liquidpp/filters/UrlEncode.hpp liquidpp/filters/Split.hpp liquidpp/filters/Join.hpp liquidpp/filters/Sort.hpp liquidpp/filters/Reverse.hpp liquidpp/filters/Uniq.hpp)
+        liquidpp/tags/Increment.hpp liquidpp/tags/Cycle.hpp liquidpp/filters/TruncateWords.hpp liquidpp/filters/Truncate.hpp liquidpp/filters/Date.hpp liquidpp/filters/StripHtml.hpp liquidpp/filters/UrlEncode.hpp liquidpp/filters/Split.hpp liquidpp/filters/Join.hpp liquidpp/filters/Sort.hpp liquidpp/filters/Reverse.hpp liquidpp/filters/Uniq.hpp liquidpp/filters/Map.hpp)

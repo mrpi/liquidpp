@@ -773,3 +773,31 @@ ants, bugs, bees)";
       REQUIRE(rendered == expected);
    }
 }
+
+TEST_CASE("Filter: map")
+{
+   liquidpp::Context c;
+   std::vector<std::map<std::string, std::string>> m{
+      {{"category", "business"}},
+      {{"category", "celebrities"}},
+      {{"category", "lifestyle"}},
+      {{"category", "sports"}},
+      {{"category", "technology"}}};
+   c.set("site", std::map<std::string, std::vector<std::map<std::string, std::string>>>{{"pages", m}});
+
+   {
+      auto templ = R"({% assign all_categories = site.pages | map: "category" %}
+
+{%- for item in all_categories %}
+{{- item }}
+{% endfor %})";
+      auto rendered = liquidpp::render(templ, c);
+      auto expected = R"(business
+celebrities
+lifestyle
+sports
+technology
+)";
+      REQUIRE(rendered == expected);
+   }
+}

@@ -18,14 +18,9 @@ struct Uniq : public Filter
          return std::move(val);
 
       auto& vals = val.range().inlineValues();
-      std::set<std::string> foundValues;
-      auto itr = std::remove_if(vals.begin(), vals.end(), [&](const std::string& val){
-         if (foundValues.find(val) == foundValues.end())
-         {
-            foundValues.insert(val);
-            return false;
-         }
-         return true;
+      std::set<string_view> foundValues;
+      auto itr = std::remove_if(vals.begin(), vals.end(), [&](const auto& val){
+         return !foundValues.insert(val).second;
       });
       vals.erase(itr, vals.end());
 

@@ -347,9 +347,17 @@ RangeDefinition inlineRangeValues(Context& c, RangeDefinition&& r, string_view b
    RangeDefinition::InlineValues res;
    res.reserve(r.size());
    for (size_t i=0; i < r.size(); i++)
-      res.push_back(std::get<0>(Expression::value(c, r, i, basePath)).toString());
+   {
+      Value v = std::get<0>(Expression::value(c, r, i, basePath));
+      if (v == ValueTag::Object)
+      {
+         r.setRangePath(basePath);
+         return std::move(r);
+      }
+      res.push_back(v.toString());
+   }
 
-   return RangeDefinition{std::move(res)};
+   return RangeDefinition{std::move(res), basePath};
 }
 }
 

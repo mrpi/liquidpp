@@ -31,6 +31,7 @@
 #include "filters/Sort.hpp"
 #include "filters/Reverse.hpp"
 #include "filters/Uniq.hpp"
+#include "filters/Map.hpp"
 
 namespace liquidpp
 {
@@ -65,7 +66,8 @@ std::shared_ptr<filters::Filter> FilterFactory::operator()(string_view name) con
       return std::make_shared<Join>();
    if (name == "lstrip")
       return std::make_shared<Lstrip>();
-   // TODO: Filter: map
+   if (name == "map")
+      return std::make_shared<Map>();
    if (name == "minus")
       return makeNumberFilter1Arg( [](auto d, auto arg){ return d - arg; } );
    if (name == "modulo")
