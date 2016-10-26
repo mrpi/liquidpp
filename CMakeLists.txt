@@ -12,6 +12,8 @@ set(CMAKE_CXX_STANDARD_REQUIRED on)
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14")
 
 if(MSVC)
+   # We just need the boost::date_time heades not the lib
+   add_definitions(-DBOOST_ALL_NO_LIB)
 else()
    set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -Wall -Werror")
 endif()
