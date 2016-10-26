@@ -26,4 +26,4 @@ script:
     - cd _builds
     - cmake ..
     - make
-    - ctest
+    - ctest --output-on-failure
