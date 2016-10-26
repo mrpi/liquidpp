@@ -29,7 +29,7 @@ Requirements
 
 Status
 -----
-This software has beta state and misses some features of the original Liquid Markup Language.
+This software has beta state but supports nearly all features of the original Ruby version of the Liquid Markup Language.
 
 - on Travis-CI: [![Travis Build Status](https://travis-ci.org/mrpi/liquidpp.svg?branch=master)](https://travis-ci.org/mrpi/liquidpp)
 - on AppVeyor: [![AppVeyor Build Status](https://ci.appveyor.com/api/projects/status/91g3twect2bacw3w/branch/master?svg=true)](https://ci.appveyor.com/project/mrpi/liquidpp)
