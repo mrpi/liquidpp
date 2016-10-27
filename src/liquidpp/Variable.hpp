@@ -18,6 +18,8 @@ struct Variable : public IRenderable {
    Variable(const FilterFactoryT& filterFac, string_view data)
    {
       data.remove_prefix(data[2] == '-' ? 3 : 2);
+      if (data.size() < 3)
+         throw Exception("Tag is too short!", data);
       data.remove_suffix(data[data.size() - 3] == '-' ? 3 : 2);
 
       auto tokens = Expression::splitTokens(data);
