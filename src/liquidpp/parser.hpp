@@ -48,7 +48,7 @@ inline string_view popTag(string_view& str, bool& stripNextString) {
    assert(str.substr(0, 2) == "{%");
 
    auto len = str.size();
-   for (size_t i = 0; i < len; i++) {
+   for (size_t i = 3; i < len; i++) {
       if (str[i] == '}') {
          if (str[i-1] == '%') {
             stripNextString = str[i-2] == '-';
@@ -66,7 +66,7 @@ inline string_view popVariable(string_view& str, bool& stripNextString) {
    assert(str.substr(0, 2) == "{{");
 
    auto len = str.size();
-   for (size_t i = 0; i < len; i++) {
+   for (size_t i = 3; i < len; i++) {
       if (str[i] == '}') {
          if (str[i-1] == '}') {
             stripNextString = str[i-2] == '-';
