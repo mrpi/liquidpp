@@ -6,6 +6,8 @@ namespace liquidpp {
 For::For(Tag&& tag)
    : Block(std::move(tag)) {
    auto tokens = Expression::splitTokens(value);
+   if (tokens.size() < 3)
+      throw Exception("Not enough parameters in 'for' tag!", value);
 
    loopVariable = tokens[0].to_string();
    if (tokens[1] != "in")
