@@ -17,7 +17,7 @@ struct Lstrip : public Filter
       auto sv = *val;
       auto pos = sv.find_first_not_of(" \t\r\n");
       if (pos != std::string::npos)
-         return Value::reference(sv.substr(pos));
+         return sv.substr(pos).to_string();
 
       return Value::reference(string_view{});
    }
