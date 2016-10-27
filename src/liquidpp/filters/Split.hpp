@@ -35,6 +35,8 @@ struct Split : public Filter
          // with empty separator pos can be 0
          if (pos == 0)
          {
+            if (sv.empty())
+               break;
             // TODO: Don't split utf8 multibyte charaters
             r.push_back(sv.substr(0, 1).to_string());
             sv.remove_prefix(1);
