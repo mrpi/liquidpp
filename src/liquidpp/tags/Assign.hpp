@@ -20,9 +20,9 @@ struct Assign : public Tag {
    {
       auto tokens = Expression::splitTokens(value);
       if (tokens.size() < 3)
-         throw std::runtime_error("Malformed assign statement (three tokens required)!");
+         throw Exception("Malformed assign statement (three tokens required)!", value);
       if (tokens[1] != "=")
-         throw std::runtime_error("Malformed assign statement (assignment operator '=' required)!");
+         throw Exception("Malformed assign statement (assignment operator '=' required)!", value);
 
       variableName = tokens[0];
       assignment = Expression::toToken(tokens[2]);

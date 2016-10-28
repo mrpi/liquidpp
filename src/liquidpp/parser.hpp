@@ -135,9 +135,16 @@ void fastParser(string_view content, BlockBody& flatNodes)
 }
 
 template<typename TagFactoryT, typename FilterFactoryT, typename Iterator>
-BlockBody buildBlocks(Iterator& itr, const Iterator& end, const std::string& endTagName = "") {
+BlockBody buildBlocks(Iterator& itr, const Iterator& end, string_view openBockTag = string_view{}) {
    BlockBody res;
    res.nodeList.reserve(end - itr);
+
+   std::string endTagName;
+   if (!openBockTag.empty())
+   {
+      endTagName = "end";
+      endTagName.append(openBockTag.data(), openBockTag.size());
+   }
 
    for (; itr != end; ++itr) {
       auto& node = *itr;
@@ -153,7 +160,7 @@ BlockBody buildBlocks(Iterator& itr, const Iterator& end, const std::string& end
             auto block = dynamic_cast<Block*>(tag.get());
             if (block)
                // TODO: get rid of recursion
-               block->body = buildBlocks<TagFactoryT, FilterFactoryT>(++itr, end, "end" + tag->name.to_string());
+               block->body = buildBlocks<TagFactoryT, FilterFactoryT>(++itr, end, tag->name);
 
             node = std::move(tag);
          }
@@ -163,7 +170,7 @@ BlockBody buildBlocks(Iterator& itr, const Iterator& end, const std::string& end
    }
 
    if (itr == end && !endTagName.empty())
-      throw std::runtime_error("Missing closing tag '{%" + endTagName + "%}'");
+      throw Exception("Missing closing tag '{%" + endTagName + "%}'", openBockTag);
 
    return res;
 }

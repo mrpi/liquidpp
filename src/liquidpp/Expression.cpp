@@ -226,7 +226,7 @@ Expression::RawTokens Expression::splitTokens(string_view sequence) {
    }
 
    if (state == State::SingleQuoteString || state == State::DoubleQuoteString)
-      throw std::runtime_error("Unterminated quoteed string!");
+      throw Exception("Unterminated quoted string!", string_view{start-1, 1});
    if (state != State::Whitespace)
       finalizeToken(&sequence[0]+len);
 
@@ -308,18 +308,18 @@ Expression Expression::fromSequence(string_view sequence)
          auto& prev = res.tokens[res.tokens.size()-2];
          auto& curr = res.tokens.back();
          if (isOperator(prev) && isOperator(curr))
-            throw std::runtime_error("Operator may not follow on operator!");
+            throw Exception("Operator may not follow on operator!", token);
          if (!isOperator(prev) && !isOperator(curr))
-            throw std::runtime_error("Value may not follow on value (operator missing)!");
+            throw Exception("Value may not follow on value (operator missing)!", token);
       }
    }
 
    if (res.tokens.empty())
-      throw std::runtime_error("Expression has zero tokens!");
+      throw Exception("Expression has zero tokens!", sequence);
    if (isOperator(res.tokens.front()))
-      throw std::runtime_error("Expression starts with operator!");
+      throw Exception("Expression starts with operator!", sequence);
    if (isOperator(res.tokens.back()))
-      throw std::runtime_error("Expression ends with operator!");
+      throw Exception("Expression ends with operator!", sequence);
 
    return res;
 }

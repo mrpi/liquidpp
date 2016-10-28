@@ -71,7 +71,7 @@ struct Expression {
          if (token == "|")
          {
             if (newFilter)
-               throw std::runtime_error("Unexpected second pipe character");
+               throw Exception("Unexpected second pipe character!", token);
             newFilter = true;
             if (currentFilter)
                filterChain.push_back(std::move(currentFilter));

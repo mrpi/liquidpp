@@ -28,6 +28,8 @@ struct UnevaluatedTag : public Tag {
          size_t len = end - start;
          value = string_view{start, len};
       }
+      else
+         value = data.substr(data.size()-1, 0);
    }
 
    void render(Context& context, std::string& out) const override final {
