@@ -4,7 +4,8 @@
 
 namespace liquidpp {
 For::For(Tag&& tag)
-   : Block(std::move(tag)) {
+   : Block(std::move(tag))
+{
    auto tokens = Expression::splitTokens(value);
    if (tokens.size() < 3)
       throw Exception("Not enough parameters in 'for' tag!", value);
@@ -96,6 +97,33 @@ Value For::LoopData::get(OptIndex requIdx, string_view path) const
    return ValueTag::Null;
 }
 
+struct RecursiveDepth
+{
+   size_t& depth;
+   const size_t pattern;
+
+   explicit RecursiveDepth(size_t& d)
+    : depth(d), pattern((1 << (10-depth)) - 1)
+   {
+      depth++;
+   }
+
+   bool checkRequired(size_t i) const
+   {
+      if (depth > 10)
+         return true;
+
+      if ((i & pattern) == pattern)
+         return true;
+      return false;
+   }
+
+   ~RecursiveDepth()
+   {
+      depth--;
+   }
+};
+
 void For::render(Context& context, std::string& res) const {
    auto rangeExpr = toRangeDefinition(rangeVariable);
    size_t rangeExprStart = 0;
@@ -154,6 +182,8 @@ void For::render(Context& context, std::string& res) const {
       return;
    }
 
+   auto beforOutputSize = res.size();
+   RecursiveDepth depth{context.recursiveDepth()};
    for (size_t i = 0; i < limit; i++) {
       size_t idx = i + offset;
       if (reversed)
@@ -162,6 +192,16 @@ void For::render(Context& context, std::string& res) const {
       auto itm = getValue(idx);
       if (!renderElement(context, res, std::get<0>(itm), std::get<1>(itm), LoopData{i, limit}))
          break;
+
+      auto resSize = res.size();
+      if (resSize > context.maxOutputSize())
+         throw Exception("Maximal output size reached!", name);
+      if (depth.checkRequired(i))
+      {
+         auto writtenInLoop = resSize - beforOutputSize;
+         if (writtenInLoop < (context.minOutputPer1024Loops() / depth.depth))
+            throw Exception("Long running loop with only few output detected!", name);
+      }
    }
 }
 

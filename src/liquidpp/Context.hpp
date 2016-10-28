@@ -27,16 +27,26 @@ private:
    StorageT mValues;
    ValueGetter mAnonymous;
 
+   size_t mMaxOutputSize{8*1024*1024};
+   size_t mMinOutputPer1024Loops{mMaxOutputSize / 4};
+   size_t mRecursiveDepth{0};
+
 public:
    Context() = default;
 
    explicit Context(const Context* parent)
-      : mParent(parent), mDocumentScopeContext(this) {
+      : mParent(parent),
+        mDocumentScopeContext(this),
+        mMaxOutputSize(parent->mMaxOutputSize),
+        mMinOutputPer1024Loops{parent->mMinOutputPer1024Loops} {
       assert(mParent->mDocumentScopeContext == nullptr);
    }
 
    explicit Context(Context* parent)
-      : mParent(parent), mDocumentScopeContext(mParent->mDocumentScopeContext) {
+      : mParent(parent),
+        mDocumentScopeContext(mParent->mDocumentScopeContext),
+        mMaxOutputSize(parent->mMaxOutputSize),
+        mMinOutputPer1024Loops{parent->mMinOutputPer1024Loops} {
       assert(mDocumentScopeContext != nullptr);
    }
 
@@ -48,6 +58,31 @@ public:
    {
       assert(mDocumentScopeContext);
       return *mDocumentScopeContext;
+   }
+
+   size_t maxOutputSize() const
+   {
+      return mMaxOutputSize;
+   }
+
+   void setMaxOutputSize(size_t val)
+   {
+      mMaxOutputSize = val;
+   }
+
+   size_t minOutputPer1024Loops() const
+   {
+      return mMinOutputPer1024Loops;
+   }
+
+   void setMinOutputPer1024Loops(size_t val)
+   {
+      mMinOutputPer1024Loops = val;
+   }
+
+   size_t& recursiveDepth()
+   {
+      return mRecursiveDepth;
    }
 
    Value get(const string_view qualifiedPath) const {
@@ -85,7 +120,7 @@ public:
                   }
                }
             }
-            return std::move(res);
+            return res;
          }
 
          if (key.idx)
