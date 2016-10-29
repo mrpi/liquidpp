@@ -354,10 +354,10 @@ std::tuple<Value, std::string> Expression::value(Context& c, const RangeDefiniti
 
 namespace
 {
-RangeDefinition inlineRangeValues(Context& c, RangeDefinition&& r, string_view basePath)
+RangeDefinition& inlineRangeValues(Context& c, RangeDefinition& r, string_view basePath)
 {
    if (r.usesInlineValues())
-      return std::move(r);
+      return r;
 
    RangeDefinition::InlineValues res;
    res.reserve(r.size());
@@ -367,12 +367,13 @@ RangeDefinition inlineRangeValues(Context& c, RangeDefinition&& r, string_view b
       if (v == ValueTag::Object)
       {
          r.setRangePath(basePath);
-         return std::move(r);
+         return r;
       }
       res.push_back(v.toString());
    }
 
-   return RangeDefinition{std::move(res), basePath};
+   r = RangeDefinition{std::move(res), basePath};
+   return r;
 }
 }
 
@@ -399,7 +400,7 @@ Value Expression::value(Context& c, const Token& t, boost::optional<const Filter
       for (auto&& filter : *filterChain)
       {
          if (res.isRange())
-            res = inlineRangeValues(c, std::move(res.range()), variableName);
+            inlineRangeValues(c, res.range(), variableName);
 
          res = (*filter)(c, std::move(res));
       }
@@ -408,7 +409,7 @@ Value Expression::value(Context& c, const Token& t, boost::optional<const Filter
    return res;
 }
 
-bool Expression::matches(const Value& left, Operator operator_, const Value& right)
+bool Expression::matches(Context& c, const Value& left, Operator operator_, const Value& right, const Token& leftToken)
 {
    switch(operator_)
    {
@@ -425,6 +426,23 @@ bool Expression::matches(const Value& left, Operator operator_, const Value& rig
       case Operator::GreaterEqual:
          return left >= right;
       case Operator::Contains:
+         if (left.isRange())
+         {
+            auto&& range = left.range();
+            if (!range.usesInlineValues())
+            {
+               auto cnt = range.size();
+               auto basePath = boost::get<VariableName>(leftToken).name;
+               for (int i=0; i < cnt; i++)
+               {
+                  auto val = std::get<0>(value(c, range, i, basePath));
+                  if (val == right)
+                     return true;
+               }
+               
+               return false;
+            }
+         }
          return left.contains(right);
       case Operator::And:
       case Operator::Or:
@@ -467,7 +485,7 @@ Value Expression::operator()(Context& c) const
       }
       else
       {
-         bool b = matches(value(c, tokens[i]), boost::get<Operator>(tokens[i+1]), value(c, tokens[i+2]));
+         bool b = matches(c, value(c, tokens[i]), boost::get<Operator>(tokens[i+1]), value(c, tokens[i+2]), tokens[i]);
          putToRes(b);
          i += 2;
       }

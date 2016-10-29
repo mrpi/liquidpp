@@ -41,7 +41,7 @@ struct Expression {
    using Token = boost::variant<Operator, Value, VariableName>;
    using FilterChain = SmallVector<std::shared_ptr<filters::Filter>, 2>;
 
-   static bool matches(const Value& left, Operator operator_, const Value& right);
+   static bool matches(Context& c, const Value& left, Operator operator_, const Value& right, const Token& leftToken);
    static RawTokens splitTokens(string_view sequence);
    static Token toToken(string_view tokenStr);
    static Expression fromSequence(string_view sequence);

@@ -379,6 +379,18 @@ public:
    }
 
    bool contains(const Value& other) const {
+      if (isRange())
+      {
+         auto needle = other.toString();
+         for (auto&& val : range().inlineValues())
+         {
+            if (val == needle)
+               return true;
+         }
+         
+         return false;
+      }
+      
       if (!isStringType())
          return false;
 
@@ -398,6 +410,15 @@ public:
    }
 };
 
+inline std::ostream& operator<<(std::ostream& os, const Value& v)
+{
+   if (v.isNumber())
+      os << v.toString();
+   else
+      os << '"' << v.toString() << '"';
+   return os;
+}
+
 using OptIndex = boost::optional<size_t>;
 using ValueGetter = std::function<Value(OptIndex, string_view)>;
 
@@ -415,6 +436,10 @@ struct ValueConverter<T&> : public ValueConverter<T> {
 
 template<typename T>
 constexpr bool hasValueConverter = ValueConverter<T>::value;
+
+inline Value toValue(Value v) {
+   return v;
+}
 
 inline Value toValue(std::string v) {
    return Value(std::move(v));

@@ -3,7 +3,7 @@ include_directories (${liquidpp_SOURCE_DIR}/src
                      ${Boost_INCLUDE_DIRS}
                      )
 
-file(DOWNLOAD  https://raw.githubusercontent.com/philsquared/Catch/master/single_include/catch.hpp ${liquidpp_SOURCE_DIR}/external/catch.hpp)
+file(DOWNLOAD https://raw.githubusercontent.com/philsquared/Catch/master/single_include/catch.hpp ${liquidpp_SOURCE_DIR}/external/catch.hpp)
 
 add_executable (liquidppTest
         main.cpp

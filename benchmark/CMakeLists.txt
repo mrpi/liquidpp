@@ -12,6 +12,7 @@ endif(COMPILER_SUPPORTS_EXT_NUM_LIT)
 
 add_executable (liquidppBenchmark
                 benchMain.cpp)                
+set_target_properties(liquidppBenchmark PROPERTIES EXCLUDE_FROM_ALL TRUE)
 
 target_link_libraries (liquidppBenchmark
                        liquidpp
