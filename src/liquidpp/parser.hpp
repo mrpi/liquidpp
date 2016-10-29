@@ -109,6 +109,8 @@ void fastParser(string_view content, BlockBody& flatNodes)
          auto pos = content.find_first_not_of(" \t\r\n");
          if (pos != std::string::npos)
             content.remove_prefix(pos);
+         else
+            return;
          stripLeadingWhitespace = false;
       }
 

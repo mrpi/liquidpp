@@ -45,7 +45,8 @@ TEST_CASE("Whitespace control: stripping all whitespaces")
   Wow, {{ username }}, you have a long name!
 {%- else -%}
   Hello there!
-{%- endif -%})", c);
+{%- endif -%}
+   )", c);
    auto expected = R"(Wow, John G. Chalmers-Smith, you have a long name!)";
    REQUIRE(rendered == expected);
 }
