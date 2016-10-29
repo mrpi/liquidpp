@@ -3,7 +3,7 @@ include_directories (${liquidpp_SOURCE_DIR}/src
                      ${Boost_INCLUDE_DIRS}
                      )
 
-file(DOWNLOAD https://raw.githubusercontent.com/philsquared/Catch/master/single_include/catch.hpp ${liquidpp_SOURCE_DIR}/external/catch.hpp)
+file(DOWNLOAD  https://raw.githubusercontent.com/philsquared/Catch/master/single_include/catch.hpp ${liquidpp_SOURCE_DIR}/external/catch.hpp)
 
 add_executable (liquidppTest
         main.cpp
@@ -16,10 +16,20 @@ add_executable (liquidppTest
         tokenize.cpp
         condition_unit_test.cpp
         tag_assign.cpp
-        filters.cpp tag_capture.cpp whitespace_control.cpp control_flow.cpp iteration.cpp forloop_object.cpp tag_increment.cpp tag_cycle.cpp)
+        filters.cpp
+        tag_capture.cpp
+        whitespace_control.cpp
+        control_flow.cpp
+        iteration.cpp
+        forloop_object.cpp
+        tag_increment.cpp
+        tag_cycle.cpp
+        multiple_error_cases.cpp)
 
 
 target_link_libraries (liquidppTest
                        liquidpp)
                        
 add_test(NAME liquidppTest COMMAND liquidppTest)
+
+add_subdirectory(fuzz)

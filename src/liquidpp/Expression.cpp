@@ -147,7 +147,7 @@ Expression::RawTokens Expression::splitTokens(string_view sequence) {
    enum class State
    {
       Whitespace,
-      Token,
+      Variable,
       Operator,
       DoubleQuoteString,
       SingleQuoteString
@@ -162,16 +162,27 @@ Expression::RawTokens Expression::splitTokens(string_view sequence) {
          return State::SingleQuoteString;
       if (c == '"')
          return State::DoubleQuoteString;
-      return State::Token;
+      return State::Variable;
+   };
+   
+   auto validateVariableName = [](string_view varName) {
+      auto firstChar = varName.front();
+      if (firstChar == '.' || firstChar == '[' || firstChar == ']')
+         throw Exception("Begin of variable name is invalid!", varName);
+
+      auto lastChar = varName.back();
+      if (lastChar == '.' || lastChar == '[')
+         throw Exception("Variable name is incomplete!", varName);
    };
 
    auto start = &sequence[0];
-   auto finalizeToken = [&](const char* end){
+   State state = stateFromChar(*start);
+   auto finalizeToken = [&](const char* end){      
       res.emplace_back(start, end-start);
+      if (state == State::Variable)
+         validateVariableName(res.back());
       start = end;
    };
-
-   State state = stateFromChar(*start);
 
    for(size_t i=0; i < len; i++)
    {
@@ -188,7 +199,7 @@ Expression::RawTokens Expression::splitTokens(string_view sequence) {
 
             break;
          }
-         case State::Token:
+         case State::Variable:
          {
             if (isWhitespace(c) || isOperatorChar(c)) {
                finalizeToken(&c);
@@ -277,14 +288,18 @@ Expression::Token Expression::toToken(string_view tokenStr)
             return Value::fromIntegral(boost::lexical_cast<std::int64_t>(tokenStr));
          else if (isFloat(tokenStr))
             return Value::fromFloatingPoint(boost::lexical_cast<double>(tokenStr));
+         else
+            throw Exception("Token is starting with a digit but not a valid number!", tokenStr);
       case '<':
       case '>':
       case '=':
       case '!':
+      {
          auto opr = toOperator(tokenStr);
          if (!opr)
             throw Exception("Unknown operator!", tokenStr);
          return *opr;
+      }
    }
 
    return VariableName{tokenStr};

@@ -25,7 +25,7 @@ struct Expression {
 
    struct VariableName {
       string_view name;
-
+      
       bool operator==(const VariableName& other) const
       {
          return name == other.name;
@@ -98,6 +98,8 @@ struct Expression {
                   }
                   else if (token != ",")
                      throw Exception("Expected ',' operator!", token);
+                  else if (i == tokenCount-1)
+                     throw Exception("Filter expression is unterminated (ending with ',')", token);
                }
             }
             else
