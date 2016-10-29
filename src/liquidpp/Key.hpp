@@ -42,7 +42,8 @@ namespace liquidpp
       if (idxStart != std::string::npos && res.name.back() == ']')
       {
          auto size = res.name.size();
-         res.idx = boost::lexical_cast<size_t>(res.name.substr(idxStart + 1, size - idxStart - 2));
+         auto numPart = res.name.substr(idxStart + 1, size - idxStart - 2);
+         res.idx = boost::lexical_cast<size_t>(numPart.data(), numPart.size());
          res.name.remove_suffix(size - idxStart);
       }
 
