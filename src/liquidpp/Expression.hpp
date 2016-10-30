@@ -23,22 +23,8 @@ struct Expression {
 
    static boost::optional<Operator> toOperator(string_view str);
 
-   struct VariableName {
-      string_view name;
-      
-      bool operator==(const VariableName& other) const
-      {
-         return name == other.name;
-      }
-
-      bool operator!=(const VariableName& other) const
-      {
-         return name != other.name;
-      }
-   };
-
    using RawTokens = SmallVector<string_view, 4>;
-   using Token = boost::variant<Operator, Value, VariableName>;
+   using Token = boost::variant<Operator, Value, Path>;
    using FilterChain = SmallVector<std::shared_ptr<filters::Filter>, 2>;
 
    static bool matches(Context& c, const Value& left, Operator operator_, const Value& right, const Token& leftToken);
@@ -47,7 +33,7 @@ struct Expression {
    static Expression fromSequence(string_view sequence);
 
    static Value value(Context& c, const Token& t, boost::optional<const FilterChain&> filterChain = boost::none);
-   static std::tuple<Value, std::string> value(Context& c, const RangeDefinition& range, size_t i, string_view basePath);
+   static std::tuple<Value, Path> value(Context& c, const RangeDefinition& range, size_t i, PathRef basePath);
 
    static bool isInteger(string_view sv);
    static bool isFloat(string_view sv);

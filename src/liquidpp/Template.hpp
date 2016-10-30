@@ -13,6 +13,8 @@ struct Template {
    BlockBody root;
 
    std::string operator()(const Context& context) const;
+      
+   Exception::Position findPosition(string_view needle) const;
 };
 
 }

@@ -41,6 +41,7 @@ struct BlockBody {
    using Nodes = SmallVector<Node, 4>;
 
    Nodes nodeList;
+   string_view templateRange;
 };
 
 }

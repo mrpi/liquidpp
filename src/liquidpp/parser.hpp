@@ -182,14 +182,21 @@ BlockBody buildBlocks(Iterator& itr, const Iterator& end, string_view openBockTa
 template<typename TagFactoryT = TagFactory, typename FilterFactoryT = FilterFactory>
 Template parse(string_view content) {
    liquidpp::Template ast;
+   ast.root.templateRange = content;
+   
+   try {
+      BlockBody flatNodes;
+      impl::fastParser<FilterFactoryT>(content, flatNodes);
 
-   BlockBody flatNodes;
-   impl::fastParser<FilterFactoryT>(content, flatNodes);
+      auto itr = flatNodes.nodeList.begin();
+      ast.root = impl::buildBlocks<TagFactoryT, FilterFactoryT>(itr, flatNodes.nodeList.end());
+      ast.root.templateRange = content;
 
-   auto itr = flatNodes.nodeList.begin();
-   ast.root = impl::buildBlocks<TagFactoryT, FilterFactoryT>(itr, flatNodes.nodeList.end());
-
-   return ast;
+      return ast;
+   } catch(Exception& e) {
+      e.position() = ast.findPosition(e.errorPart());
+      throw;
+   }
 }
 }
 

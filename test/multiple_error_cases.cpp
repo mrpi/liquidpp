@@ -14,7 +14,13 @@ TEST_CASE("stackoverflow with array name ending with '.'")
 {% endfor %}
    )";
    
-   REQUIRE_THROWS_AS(liquidpp::render(templ, c), liquidpp::Exception);
+   try {
+      liquidpp::render(templ, c);
+      FAIL("Expected an exception!");
+   } catch(liquidpp::Exception& e) {
+      REQUIRE(e.position().line == 3);
+      REQUIRE(e.position().column == 13);
+   }
 }
 
 TEST_CASE("loop variable same name as range name")
@@ -48,4 +54,19 @@ TEST_CASE("filter ending on ',' separator")
    )";
    
    REQUIRE_THROWS_AS(liquidpp::render(templ, c), liquidpp::Exception);
+}
+
+TEST_CASE("very long running for loop")
+{
+   liquidpp::Context c;
+
+   auto templ = liquidpp::parse(R"({% for h in (0..99999999) -%}{% endfor %})");
+   
+   try {
+      templ(c);
+      FAIL("Expected an exception!");
+   } catch(liquidpp::Exception& e) {
+      REQUIRE(e.position().line == 1);
+      REQUIRE(e.position().column == 4);
+   }
 }

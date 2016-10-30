@@ -302,7 +302,7 @@ Expression::Token Expression::toToken(string_view tokenStr)
       }
    }
 
-   return VariableName{tokenStr};
+   return toPath(tokenStr);
 }
 
 Expression Expression::fromSequence(string_view sequence)
@@ -339,22 +339,22 @@ Expression Expression::fromSequence(string_view sequence)
    return res;
 }
 
-std::tuple<Value, std::string> Expression::value(Context& c, const RangeDefinition& range, size_t i, string_view basePath)
+std::tuple<Value, Path> Expression::value(Context& c, const RangeDefinition& range, size_t i, PathRef basePath)
 {
    assert(i < range.size());
 
    if (range.usesInlineValues())
-      return std::make_tuple(Value{range.inlineValue(i)}, std::string{});
+      return std::make_tuple(Value{range.inlineValue(i)}, Path{});
    else
    {
-      auto subPath = basePath.to_string() + '[' + boost::lexical_cast<std::string>(range.index(i)) + ']';
+      auto subPath = basePath + Key{range.index(i)};
       return std::make_tuple(c.get(subPath), subPath);
    }
 }
 
 namespace
 {
-RangeDefinition& inlineRangeValues(Context& c, RangeDefinition& r, string_view basePath)
+RangeDefinition& inlineRangeValues(Context& c, RangeDefinition& r, PathRef basePath)
 {
    if (r.usesInlineValues())
       return r;
@@ -380,7 +380,7 @@ RangeDefinition& inlineRangeValues(Context& c, RangeDefinition& r, string_view b
 Value Expression::value(Context& c, const Token& t, boost::optional<const FilterChain&> filterChain)
 {
    Value res;
-   string_view variableName;
+   PathRef path;
 
    switch(t.which())
    {
@@ -390,8 +390,8 @@ Value Expression::value(Context& c, const Token& t, boost::optional<const Filter
          res = boost::get<Value>(t);
          break;
       case 2:
-         variableName = boost::get<VariableName>(t).name;
-         res = c.get(variableName);
+         path = boost::get<Path>(t);
+         res = c.get(path);
          break;
    }
 
@@ -400,7 +400,7 @@ Value Expression::value(Context& c, const Token& t, boost::optional<const Filter
       for (auto&& filter : *filterChain)
       {
          if (res.isRange())
-            inlineRangeValues(c, res.range(), variableName);
+            inlineRangeValues(c, res.range(), path);
 
          res = (*filter)(c, std::move(res));
       }
@@ -432,7 +432,7 @@ bool Expression::matches(Context& c, const Value& left, Operator operator_, cons
             if (!range.usesInlineValues())
             {
                auto cnt = range.size();
-               auto basePath = boost::get<VariableName>(leftToken).name;
+               auto& basePath = boost::get<Path>(leftToken);
                for (int i=0; i < cnt; i++)
                {
                   auto val = std::get<0>(value(c, range, i, basePath));

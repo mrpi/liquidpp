@@ -1,41 +1,14 @@
 #include <liquidpp.hpp>
-#include <rapidjson/document.h>
-#include <rapidjson/rapidjson.h>
 
-#include <iostream>
-#include <fstream>
+#include "ExampleData.hpp"
+
 #include <iterator>
-
-void loadDatabase(rapidjson::Document& doc)
-{
-   std::ifstream is("vision.database.json");
-   if (is)
-   {
-      std::string jsonStr(std::istreambuf_iterator<char>(is), {});
-
-
-      doc.Parse(jsonStr.data());
-      return;
-   }
-
-   throw std::runtime_error("Could not load database file 'vision.database.json'!");
-}
-
-// Some standard direct accessors so that the specialized templates
-// render correctly
-void setupDefaults(liquidpp::Context& c)
-{
-   c.setLink("collection", "collections[0]");
-   c.setLink("product", "products[0]");
-   c.setLink("blog", "blogs[0]");
-   c.setLink("article", "blog.articles[0]");
-}
 
 int main(int argc, char* args[])
 {
    if (argc < 2)
    {
-      std::cerr << "Usage: " << args[0] << " " << std::endl;
+      std::cerr << "Usage: " << args[0] << " <liquid template file>" << std::endl;
       return 1;
    }
 
@@ -47,12 +20,7 @@ int main(int argc, char* args[])
    }
    std::string templateContent(std::istreambuf_iterator<char>(is), {});;
 
-   rapidjson::Document doc;
-   loadDatabase(doc);
-
-   liquidpp::Context c;
-   c.setAnonymous(doc);
-   setupDefaults(c);
+   liquidpp::Context& c = liquidpp::example_data::liquidContext();
 
    try {
       //for (int i=0; i < 10000; i++)
@@ -67,5 +35,6 @@ int main(int argc, char* args[])
    {
       std::cerr << "liquidpp error: " << e.what() << std::endl;
       std::cerr << "Error at: " << e.errorPart() << std::endl;
+      std::cerr << e.position().toString() << std::endl;
    }
 }
