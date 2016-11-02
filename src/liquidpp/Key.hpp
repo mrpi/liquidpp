@@ -9,8 +9,6 @@
 #include <boost/optional.hpp>
 #include <boost/variant.hpp>
 
-#include <gsl/span>
-
 namespace liquidpp {
    
 using OptIndex = boost::optional<size_t>;

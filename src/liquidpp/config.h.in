@@ -11,6 +11,8 @@
 #include <boost/container/small_vector.hpp>
 #endif
 
+#include "external/gsl/span"
+
 namespace liquidpp
 {
    using string_view = @LIQUIDPP_STRING_VIEW_CLASS@;
