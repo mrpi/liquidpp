@@ -33,7 +33,7 @@ struct Split : public Filter
          }
 
          // with empty separator pos can be 0
-         if (pos == 0)
+         if (pos == 0 && separator.empty())
          {
             if (sv.empty())
                break;
