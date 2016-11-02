@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+  <title>Editor</title>
+  <script src="jQuery.js"></script>
+  <style type="text/css" media="screen">
+    body {
+        overflow: hidden;
+    }
+    
+    #frame {
+         width: 1100px;
+         height: 100vh;
+         margin-left: auto;
+         margin-right: auto;
+         background-color: lightgray;
+         padding: 10px;
+    }
+    
+    .body-override {
+         margin: 0px;
+    }
+    
+    #content {
+         width: 100%;
+         display: flex;
+    }
+    
+    #editor {
+        height: 35vh;
+        border-radius: 5px;
+    }
+    
+    #result {
+        height: 30vh;
+        border-radius: 5px;
+    }
+    
+    #contextData {
+        height: 79vh;
+        width: 26vw;
+        border-radius: 5px;
+    }
+    
+    .subHeadline {
+        padding-left: 2vh;
+        color: #202020;
+    }
+    
+    .noselection .ace_marker-layer .ace_selection {
+        background: transparent;
+    }
+
+    .noselection .ace_cursor {
+        color: transparent;
+    }
+    
+    .left-div {
+         float: left;
+         width: 90%;
+         padding-left: 6px;
+         padding-right: 20px;
+         padding-bottom: 7px;
+         border-radius: 22px;
+    }
+
+    .right-div {
+         float: right;
+         background-color: dimgray;
+         padding-left: 12px;
+         padding-right: 12px;
+         padding-bottom: 7px;
+         border-radius: 26px;
+     }​​
+     
+     .ace-idle-fingers .ace_gutter {
+         background: dimgrey;
+         color: whitesmoke;
+    }
+  </style>
+</head>
+<body class="body-override">
+   
+<div id="frame">
+   <h1>Try liquidpp online</h1>
+   <div id="content">
+      <div class="left-div">
+         <h2 class="subHeadline">Template code</h2>
+         <pre id="editor"><p>{{ user.name | upcase }} has to do:</p>
+
+         <ul>
+         {% for item in user.tasks -%}
+         <li>{{ item.name }}</li>
+         {% endfor -%}
+         </ul>
+         </pre>
+         <h2 class="subHeadline">Result</h2>
+         <pre id="result" class="noselection"></pre>
+      </div>   
+
+      <div class="right-div">
+         <h2 class="subHeadline">Data</h2>
+         <pre id="contextData" class="noselection"></pre>
+      </div>
+   </div>
+</div>
+
+<script src="ace-min/ace.js" type="text/javascript" charset="utf-8"></script>
+<script>
+    var lastError;
+    
+    function getData()
+    {
+       $.get("vision.database.json")
+          .done(function (data) {
+             contextData.setValue(data);
+          });
+    }
+
+    function onInput()
+    {
+       $.post("render", editor.getValue())
+          .done(function (data) {
+             result.setValue(data);
+             editor.getSession().setAnnotations([]);
+          })
+          .fail(function (data) { 
+             result.setValue("Error: " + data.responseJSON.message);
+             lastError = data;
+            
+             editor.getSession().setAnnotations([{
+               row: data.responseJSON.line - 1,
+               column: data.responseJSON.column,
+               text: data.responseJSON.message,
+               type: "error" // also warning and information
+             }]);
+         });
+    }
+
+    var editor = ace.edit("editor");
+    editor.setTheme("ace/theme/dawn");
+    //editor.setTheme("ace/theme/katzenmilch");
+    editor.session.setMode("ace/mode/liquid");
+    editor.on("input", onInput);
+    
+    var result = ace.edit("result");
+    result.setTheme("ace/theme/dawn");
+    //result.setTheme("ace/theme/katzenmilch");
+    result.setReadOnly(true);
+    result.getSession().setUseWrapMode(true);
+    
+    result.getSession().selection.on('changeSelection', function (e)
+    {
+        result.getSession().selection.clearSelection();
+    });
+    
+    var contextData = ace.edit("contextData");
+    contextData.setTheme("ace/theme/idle_fingers");
+    contextData.session.setMode("ace/mode/json");
+    contextData.setReadOnly(true);
+    contextData.getSession().setUseWrapMode(true);
+    
+    contextData.getSession().selection.on('changeSelection', function (e)
+    {
+        contextData.getSession().selection.clearSelection();
+    });
+    
+    getData();
+    onInput();
+</script>
+
+</body>
+</html>
