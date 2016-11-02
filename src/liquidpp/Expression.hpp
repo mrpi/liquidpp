@@ -1,11 +1,12 @@
 #pragma once
 
-#include "ValueConverter.hpp"
 #include "config.h"
+#include "Exception.hpp"
+#include "Value.hpp"
 #include "filters/Filter.hpp"
 
 namespace liquidpp {
-
+   
 class Context;
 
 struct Expression {
@@ -39,6 +40,7 @@ struct Expression {
    static bool isFloat(string_view sv);
    static bool isWhitespace(char c);
    static bool isAsciiAlpha(char c);
+   static bool isDigit(char c);
 
    Value operator()(Context& c) const;
 

@@ -98,6 +98,14 @@ bool isOperator(const Expression::Token& token)
 }
 }
 
+
+bool Expression::isDigit(char c)
+{
+   if (c >= '0' && c <= '9')
+      return true;
+   return false;
+}
+
 bool Expression::isInteger(string_view sv)
 {
    if (sv.empty())
@@ -105,7 +113,7 @@ bool Expression::isInteger(string_view sv)
 
    for (auto&& c : sv)
    {
-      if (c >= '0' && c <= '9')
+      if (isDigit(c))
          ;
       else if (c == '-' && &c == &sv.front() && sv.size() > 1)
          ;
@@ -125,7 +133,7 @@ bool Expression::isFloat(string_view sv)
 
    for (auto&& c : sv)
    {
-      if (c >= '0' && c <= '9')
+      if (isDigit(c))
          ;
       else if (c == '-' && &c == &sv.front() && sv.size() > 1)
          ;
@@ -171,7 +179,7 @@ Expression::RawTokens Expression::splitTokens(string_view sequence) {
          throw Exception("Begin of variable name is invalid!", varName);
 
       auto lastChar = varName.back();
-      if (lastChar == '.' || lastChar == '[')
+      if (lastChar == '.' || lastChar == '[' || lastChar == '"' || lastChar == '\'')
          throw Exception("Variable name is incomplete!", varName);
    };
 
@@ -204,6 +212,13 @@ Expression::RawTokens Expression::splitTokens(string_view sequence) {
             if (isWhitespace(c) || isOperatorChar(c)) {
                finalizeToken(&c);
                state = stateFromChar(c);
+            }
+            if (c == '"' || c == '\'')
+            {
+               auto pos = sequence.find(c, i+1);
+               if (pos == std::string::npos)
+                  throw Exception("Unterminated quoted string in variable definition!", sequence.substr(i));
+               i = pos;
             }
 
             break;
@@ -248,6 +263,8 @@ Expression::Token Expression::toToken(string_view tokenStr)
 {
    switch(tokenStr[0])
    {
+      case '\0':
+         throw Exception("Zero char ('\\0') is not allowed at this position!", tokenStr);
       case 'a':
          if (tokenStr == "and")
             return Operator::And;
@@ -285,9 +302,9 @@ Expression::Token Expression::toToken(string_view tokenStr)
       case '8':
       case '9':
          if (isInteger(tokenStr))
-            return Value::fromIntegral(boost::lexical_cast<std::int64_t>(tokenStr));
+            return Value::fromIntegral(lex_cast<std::int64_t>(tokenStr));
          else if (isFloat(tokenStr))
-            return Value::fromFloatingPoint(boost::lexical_cast<double>(tokenStr));
+            return Value::fromFloatingPoint(lex_cast<double>(tokenStr));
          else
             throw Exception("Token is starting with a digit but not a valid number!", tokenStr);
       case '<':

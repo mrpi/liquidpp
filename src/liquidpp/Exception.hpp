@@ -2,8 +2,10 @@
 
 #include "config.h"
 
-namespace liquidpp {
+#include <sstream>
 
+namespace liquidpp {
+   
 class Exception : public std::runtime_error {
 public:
   struct Position {

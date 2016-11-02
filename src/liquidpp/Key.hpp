@@ -12,6 +12,7 @@
 #include <gsl/span>
 
 namespace liquidpp {
+   
 using OptIndex = boost::optional<size_t>;
 using KeyHolder = SmallVector<char, 64>;
 
@@ -116,40 +117,7 @@ inline Key popKey(PathRef &path) {
   return res;
 }
 
-inline Key popKey(string_view &path) {
-  if (path.empty())
-    return Key{};
-
-  if (path[0] == '[') {
-    auto idxEnd = path.find(']');
-    if (idxEnd != std::string::npos) {
-      auto idx = boost::lexical_cast<size_t>(path.data() + 1, idxEnd - 1);
-      if (path.size() > idxEnd + 1) {
-        if (path[idxEnd + 1] != '.')
-          throw Exception("Expected '.' after array index!", path);
-        path.remove_prefix(idxEnd + 2);
-      } else
-        path = string_view{};
-      return Key{idx};
-    } else
-      throw Exception("Unterminated array index!", path);
-  }
-
-  for (auto &c : path) {
-    if (c == '.' || c == '[') {
-      auto keyStr = path.substr(0, &c - path.data());
-      if (c == '.')
-        path.remove_prefix(&c - path.data() + 1);
-      else
-        path.remove_prefix(&c - path.data());
-      return Key{keyStr};
-    }
-  }
-
-  auto keyStr = path;
-  path = string_view{};
-  return Key{keyStr};
-}
+Key popKey(string_view &path);
 
 inline Key popLastKey(PathRef &path) {
   Key res;

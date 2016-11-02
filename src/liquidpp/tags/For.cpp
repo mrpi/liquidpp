@@ -122,6 +122,9 @@ void For::render(Context &context, std::string &res) const {
         Expression::value(context, rangeExpression->startIdxToken).integralValue();
     rangeExprEnd =
         Expression::value(context, rangeExpression->endIdxToken).integralValue();
+        
+    if (rangeExprStart > rangeExprEnd)
+       throw Exception("Start index of range is larger than its end!", value);
   } else
     val = context.get(rangePath);
 

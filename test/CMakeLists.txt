@@ -33,3 +33,5 @@ target_link_libraries (liquidppTest
 add_test(NAME liquidppTest COMMAND liquidppTest)
 
 add_subdirectory(fuzz)
+
+add_subdirectory(try_online)
