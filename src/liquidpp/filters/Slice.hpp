@@ -10,21 +10,20 @@ struct Slice : public Filter {
   Expression::Token endIdxToken;
 
   virtual Value operator()(Context &c, Value &&val) const override final {
-    auto startIdx = static_cast<size_t>(
-        Expression::value(c, startIdxToken).integralValue());
+    auto startIdx = Expression::value(c, startIdxToken).integralValue();
 
     auto str = val.toString();
 
     if (endIdxToken == Expression::Token{}) {
       if (startIdx < 0)
-        return str.substr(str.size() + startIdx, 1);
-      return str.substr(startIdx, 1);
+        return str.substr(static_cast<size_t>(str.size() + startIdx), 1);
+      return str.substr(static_cast<size_t>(startIdx), 1);
     } else {
       auto endIdx = static_cast<size_t>(
           Expression::value(c, endIdxToken).integralValue());
       if (startIdx < 0)
-        return str.substr(str.size() + startIdx, endIdx);
-      return str.substr(startIdx, endIdx);
+        return str.substr(static_cast<size_t>(str.size() + startIdx), endIdx);
+      return str.substr(static_cast<size_t>(startIdx), endIdx);
     }
   }
 
