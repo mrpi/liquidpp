@@ -9,6 +9,7 @@
 #include <boost/optional.hpp>
 #include <boost/variant/get.hpp>
 #include <boost/variant/variant.hpp>
+#include <boost/locale.hpp>
 
 #include "config.h"
 
@@ -26,6 +27,7 @@ private:
   using StorageT = std::map<std::string, MapValue, std::less<void>>;
   StorageT mValues;
   ValueGetter mAnonymous;
+  boost::optional<std::locale> mLocale{boost::locale::generator{}("")};
 
   size_t mMaxOutputSize{8 * 1024 * 1024};
   size_t mMinOutputPer1024Loops{mMaxOutputSize / 4};
@@ -36,6 +38,7 @@ public:
 
   explicit Context(const Context *parent)
       : mParent(parent), mDocumentScopeContext(this),
+        mLocale(boost::none),
         mMaxOutputSize(parent->mMaxOutputSize),
         mMinOutputPer1024Loops{parent->mMinOutputPer1024Loops} {
     assert(mParent->mDocumentScopeContext == nullptr);
@@ -43,6 +46,7 @@ public:
 
   explicit Context(Context *parent)
       : mParent(parent), mDocumentScopeContext(mParent->mDocumentScopeContext),
+        mLocale(boost::none),
         mMaxOutputSize(parent->mMaxOutputSize),
         mMinOutputPer1024Loops{parent->mMinOutputPer1024Loops} {
     assert(mDocumentScopeContext != nullptr);
@@ -50,6 +54,18 @@ public:
 
   Context(std::initializer_list<StorageT::value_type> entries)
       : mValues(entries) {}
+      
+  const std::locale& locale() const
+  {
+     if (mLocale)
+        return *mLocale;
+     return mParent->locale();
+  }
+      
+  void setLocale(const std::locale& loc)
+  {
+     mLocale = loc;
+  }
 
   Context &documentScopeContext() {
     assert(mDocumentScopeContext);

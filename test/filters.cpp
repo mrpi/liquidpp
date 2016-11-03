@@ -96,6 +96,11 @@ TEST_CASE("Filter: downcase")
       auto rendered = liquidpp::render(R"({{ "apple" | downcase }})", c);
       REQUIRE(rendered == "apple");
    }
+   
+   {
+      auto rendered = liquidpp::render(u8"{{ 'grÜßEN' | downcase }}", c);
+      REQUIRE(rendered == "grüßen");
+   }
 }
 
 TEST_CASE("Filter: upcase")
@@ -111,6 +116,11 @@ TEST_CASE("Filter: upcase")
       auto rendered = liquidpp::render(R"({{ "APPLE" | upcase }})", c);
       REQUIRE(rendered == "APPLE");
    }
+   
+   {
+      auto rendered = liquidpp::render(u8"{{ 'grüßEN' | upcase }}", c);
+      REQUIRE(rendered == "GRÜSSEN");
+   }
 }
 
 TEST_CASE("Filter: capitalize")
@@ -125,6 +135,11 @@ TEST_CASE("Filter: capitalize")
    {
       auto rendered = liquidpp::render(R"({{ "my great title" | capitalize }})", c);
       REQUIRE(rendered == "My great title");
+   }
+
+   {
+      auto rendered = liquidpp::render(u8"{{ \"ähnlichkeit ist rein zufällig\" | capitalize }}", c);
+      REQUIRE(rendered == u8"Ähnlichkeit ist rein zufällig");
    }
 }
 
@@ -586,6 +601,16 @@ TEST_CASE("Filter: truncate")
       auto rendered = liquidpp::render(R"({{ "Ground control to Major Tom." | truncate: 20, "" }})", c);
       REQUIRE(rendered == "Ground control to Ma");
    }
+
+   {
+      auto rendered = liquidpp::render(u8R"({{ "äöüßÄÖÜ" | truncate: 5, "" }})", c);
+      REQUIRE(rendered == u8"äöüßÄ");
+   }
+
+   {
+      auto rendered = liquidpp::render(R"({{ "123" | truncate: 2, "..." }})", c);
+      REQUIRE(rendered == "...");
+   }
 }
 
 TEST_CASE("Filter: truncatewords")
@@ -644,6 +669,33 @@ TEST_CASE("Filter: split")
   George
 
   Ringo
+)";
+      REQUIRE(rendered == expected);
+   }
+   
+   {
+      auto templ = u8R"({{"abcäöüßABC" | split: "" | join: ", "}})";
+      auto rendered = liquidpp::render(templ, c);
+      auto expected = u8R"(a, b, c, ä, ö, ü, ß, A, B, C)";
+      REQUIRE(rendered == expected);
+   }
+   
+   {
+      auto templ = u8R"({% assign chars = "abcäöüßABC" | split: "" -%}
+{% for char in chars -%}
+   {{char}}
+{% endfor %})";
+      auto rendered = liquidpp::render(templ, c);
+      auto expected = u8R"(a
+b
+c
+ä
+ö
+ü
+ß
+A
+B
+C
 )";
       REQUIRE(rendered == expected);
    }

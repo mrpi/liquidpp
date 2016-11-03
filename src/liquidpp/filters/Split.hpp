@@ -22,30 +22,33 @@ struct Split : public Filter
 
       RangeDefinition::InlineValues r;
       auto sv = *val;
-      while(true)
+      
+      if (separator.empty())
       {
-         auto pos = sv.find(separator);
-         if (pos == std::string::npos)
+         r.reserve(sv.size());
+         while(true)
          {
-            r.push_back(sv.to_string());
-            sv = string_view{};
-            break;
+            auto ch = utf8::popChar(sv);
+            if (ch.empty())
+               break;
+            r.push_back(ch.to_string());
          }
-
-         // with empty separator pos can be 0
-         if (pos == 0 && separator.empty())
+      }
+      else
+      {
+         while(true)
          {
-            if (sv.empty())
+            auto pos = sv.find(separator);
+            if (pos == std::string::npos)
+            {
+               r.push_back(sv.to_string());
+               sv = string_view{};
                break;
-            // TODO: Don't split utf8 multibyte charaters
-            r.push_back(sv.substr(0, 1).to_string());
-            sv.remove_prefix(1);
-            if (sv.empty())
-               break;
-         }
+            }
 
-         r.push_back(sv.substr(0, pos).to_string());
-         sv.remove_prefix(pos + separator.size());
+            r.push_back(sv.substr(0, pos).to_string());
+            sv.remove_prefix(pos + separator.size());
+         }
       }
 
       return RangeDefinition{std::move(r)};

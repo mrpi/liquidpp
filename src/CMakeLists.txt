@@ -54,3 +54,7 @@ add_library (liquidpp STATIC
         liquidpp/filters/Reverse.hpp 
         liquidpp/filters/Uniq.hpp 
         liquidpp/filters/Map.hpp)
+
+target_link_libraries (liquidpp
+                       boost_locale)
+                       

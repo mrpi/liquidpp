@@ -1,6 +1,9 @@
 #pragma once
 
 #include "Filter.hpp"
+#include "../Context.hpp"
+
+#include <boost/locale.hpp>
 
 namespace liquidpp
 {
@@ -14,16 +17,7 @@ struct Upcase : public Filter
       if (!val.isStringViewRepresentable())
          return std::move(val);
 
-      auto sv = *val;
-
-      std::locale loc;
-      std::string res;
-      res.reserve(sv.size());
-
-      // TODO: No real UTF-8 handling (boost::locale or ICU required)
-      for(auto c : sv)
-         res += std::toupper(c, loc);
-      return std::move(res);
+      return boost::locale::to_upper(val.toString(), c.locale());
    }
 };
 

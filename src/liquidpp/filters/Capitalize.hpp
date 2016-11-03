@@ -14,16 +14,10 @@ struct Capitalize : public Filter
       if (!val.isStringViewRepresentable())
          return std::move(val);
 
-      auto sv = *val;
-
-      std::locale loc;
-      std::string res = sv.to_string();
-
-      // TODO: No real UTF-8 handling (boost::locale or ICU required)
-      if (!res.empty())
-         res[0] = std::toupper(sv[0], loc);
-
-      return std::move(res);
+      auto res = val.toString();
+      string_view sv = res;
+      auto firstChar = utf8::popChar(sv);
+      return boost::locale::to_title(firstChar.to_string(), c.locale()) + sv.to_string();
    }
 };
 
