@@ -14,7 +14,7 @@ For::For(Tag &&tag) : Block(std::move(tag)) {
                     tokens[1]);
   rangeExpression = toRangeDefinition(tokens[2]);
   if (!rangeExpression)
-     rangePath = toPath(tokens[2]);
+    rangePath = toPath(tokens[2]);
 
   auto cnt = tokens.size();
   for (size_t i = 3; i < cnt; i++) {
@@ -118,13 +118,15 @@ void For::render(Context &context, std::string &res) const {
   Value val;
 
   if (rangeExpression) {
-    rangeExprStart =
-        Expression::value(context, rangeExpression->startIdxToken).integralValue();
-    rangeExprEnd =
-        Expression::value(context, rangeExpression->endIdxToken).integralValue();
-        
+    rangeExprStart = static_cast<size_t>(
+        Expression::value(context, rangeExpression->startIdxToken)
+            .integralValue());
+    rangeExprEnd = static_cast<size_t>(
+        Expression::value(context, rangeExpression->endIdxToken)
+            .integralValue());
+
     if (rangeExprStart > rangeExprEnd)
-       throw Exception("Start index of range is larger than its end!", value);
+      throw Exception("Start index of range is larger than its end!", value);
   } else
     val = context.get(rangePath);
 
@@ -149,7 +151,8 @@ void For::render(Context &context, std::string &res) const {
 
   size_t offset = 0;
   if (offsetToken)
-    offset = Expression::value(context, *offsetToken).integralValue();
+    offset = static_cast<size_t>(
+        Expression::value(context, *offsetToken).integralValue());
 
   size_t limit = size - offset;
   if (limitToken) {

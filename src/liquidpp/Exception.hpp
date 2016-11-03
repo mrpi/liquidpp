@@ -5,12 +5,16 @@
 #include <sstream>
 
 namespace liquidpp {
-   
+
 class Exception : public std::runtime_error {
 public:
   struct Position {
     size_t line{0};
     size_t column{0};
+
+    Position() = default;
+
+    Position(size_t line, size_t column) : line(line), column(column) {}
 
     std::string toString() const {
       if (line == 0)
