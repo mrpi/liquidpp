@@ -16,6 +16,7 @@ matrix:
             - gcc-6
             - g++-6
             - libboost1.55-dev
+            - libboost-locale1.55
             - rapidjson-dev
           sources:
             - boost-latest
