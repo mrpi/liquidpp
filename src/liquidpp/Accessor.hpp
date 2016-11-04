@@ -247,9 +247,24 @@ struct Accessor<std::tuple<Args...>> : public std::true_type {
 
 template <typename... Args>
 struct Accessor<boost::variant<Args...>> : public std::true_type {
+  struct Visitor : public boost::static_visitor<Value>
+  {
+     PathRef path;
+     
+     inline Visitor(PathRef p)
+      : path(p)
+     {}
+     
+     template<typename T>
+     inline Value operator()(const T& val) const
+     {
+        return elementToValue(val, path);
+     }
+  };
+   
   template <typename T>
-  static inline Value get(const T& ref, PathRef path) {
-    return boost::apply_visitor([path](auto& val){ return elementToValue(val, path); }, ref);
+  static inline Value get(const T& ref, PathRef path) {     
+    return boost::apply_visitor(Visitor{path}, ref);
   }
 };
 }
