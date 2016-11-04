@@ -21,15 +21,15 @@ namespace liquidpp {
 
 using ValueGetter = std::function<Value(PathRef)>;
 
-template <typename T, typename = void> struct ValueConverter : public std::false_type {};
+template <typename T, typename = void> struct Accessor : public std::false_type {};
 
 template <typename T>
-struct ValueConverter<const T> : public ValueConverter<T> {};
+struct Accessor<const T> : public Accessor<T> {};
 
-template <typename T> struct ValueConverter<T &> : public ValueConverter<T> {};
+template <typename T> struct Accessor<T &> : public Accessor<T> {};
 
 template <typename T>
-constexpr bool hasValueConverter = ValueConverter<T>::value;
+constexpr bool hasAccessor = Accessor<T>::value;
 
 inline Value toValue(Value v) { return v; }
 
@@ -45,7 +45,7 @@ inline Value toValue(bool b) { return Value::fromBool(b); }
 
 template <typename T>
 Value toValue(
-    T t, std::enable_if_t<!hasValueConverter<T> && std::is_integral<T>::value,
+    T t, std::enable_if_t<!hasAccessor<T> && std::is_integral<T>::value,
                           void **> = 0) {
   return Value::fromIntegral(t);
 }
@@ -53,14 +53,14 @@ Value toValue(
 template <typename T>
 Value toValue(
     T t,
-    std::enable_if_t<!hasValueConverter<T> && std::is_floating_point<T>::value,
+    std::enable_if_t<!hasAccessor<T> && std::is_floating_point<T>::value,
                      void **> = 0) {
   return Value::fromFloatingPoint(t);
 }
 
 template <typename T>
 Value elementToValue(T &&t, PathRef path,
-                     std::enable_if_t<!hasValueConverter<T>, void **> = 0) {
+                     std::enable_if_t<!hasAccessor<T>, void **> = 0) {
   if (!path.empty())
     return ValueTag::SubValue;
   return toValue(std::forward<T>(t));
@@ -68,13 +68,13 @@ Value elementToValue(T &&t, PathRef path,
 
 template <typename T>
 Value elementToValue(T &&t, PathRef path,
-                     std::enable_if_t<hasValueConverter<T>, void **> = 0) {
-  return ValueConverter<T>::get(std::forward<T>(t))(path);
+                     std::enable_if_t<hasAccessor<T>, void **> = 0) {
+  return Accessor<T>::get(std::forward<T>(t))(path);
 }
 
 namespace impl {
 template <typename KeyT, typename ValueT>
-struct AssociativeContainerConverter : public std::true_type {
+struct AssociativeContainerAccessor : public std::true_type {
   template <typename T> static auto get(T &&map) {
     return [map = std::forward<T>(map)](PathRef path)->Value {
       auto key = popKey(path);
@@ -94,15 +94,15 @@ struct AssociativeContainerConverter : public std::true_type {
 }
 
 template <typename KeyT, typename ValueT>
-struct ValueConverter<std::map<KeyT, ValueT>>
-    : public impl::AssociativeContainerConverter<KeyT, ValueT> {};
+struct Accessor<std::map<KeyT, ValueT>>
+    : public impl::AssociativeContainerAccessor<KeyT, ValueT> {};
 
 template <typename KeyT, typename ValueT>
-struct ValueConverter<std::unordered_map<KeyT, ValueT>>
-    : public impl::AssociativeContainerConverter<KeyT, ValueT> {};
+struct Accessor<std::unordered_map<KeyT, ValueT>>
+    : public impl::AssociativeContainerAccessor<KeyT, ValueT> {};
 
 template <typename ValueT>
-struct ValueConverter<std::vector<ValueT>> : public std::true_type {
+struct Accessor<std::vector<ValueT>> : public std::true_type {
   template <typename T> static auto get(T &&vec) {
     return [vec = std::forward<T>(vec)](PathRef path)->Value {
       auto key = popKey(path);

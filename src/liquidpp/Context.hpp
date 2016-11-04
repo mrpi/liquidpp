@@ -14,7 +14,7 @@
 #include "config.h"
 
 #include "Key.hpp"
-#include "ValueConverter.hpp"
+#include "Accessor.hpp"
 
 #include "accessors/Accessors.hpp"
 
@@ -159,15 +159,15 @@ public:
 
   template <typename T>
   void set(std::string name, const T &value,
-           std::enable_if_t<!hasValueConverter<T>, void **> = 0) {
+           std::enable_if_t<!hasAccessor<T>, void **> = 0) {
     setLiquidValue(std::move(name), toValue(value));
   }
 
   template <typename T>
   void set(std::string name, T &&value,
-           std::enable_if_t<hasValueConverter<std::decay_t<T>>, void **> = 0) {
+           std::enable_if_t<hasAccessor<std::decay_t<T>>, void **> = 0) {
     mValues[name] =
-        ValueConverter<std::decay_t<T>>::get(std::forward<T>(value));
+        Accessor<std::decay_t<T>>::get(std::forward<T>(value));
   }
 
   void setLink(std::string name, string_view referencedPath) {
@@ -186,7 +186,7 @@ public:
   }
 
   template <typename T> void setAnonymous(T &&value) {
-    mAnonymous = ValueConverter<std::decay_t<T>>::get(std::forward<T>(value));
+    mAnonymous = Accessor<std::decay_t<T>>::get(std::forward<T>(value));
   }
 };
 }

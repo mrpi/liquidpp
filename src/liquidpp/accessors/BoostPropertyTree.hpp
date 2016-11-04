@@ -4,7 +4,7 @@
 
 namespace liquidpp {
 template <>
-struct ValueConverter<boost::property_tree::ptree> : public std::true_type {
+struct Accessor<boost::property_tree::ptree> : public std::true_type {
   template <typename T> static auto get(T &&propTree) {
     return [propTree = std::forward<T>(propTree)](PathRef path)->Value {
       auto parent = propTree;

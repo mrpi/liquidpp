@@ -1,7 +1,7 @@
 #pragma once
 
 #include "../Key.hpp"
-#include "../ValueConverter.hpp"
+#include "../Accessor.hpp"
 
 namespace rapidjson {
 template <typename Encoding, typename Allocator> class GenericValue;
@@ -17,7 +17,7 @@ inline GenericStringRef<CharType> StringRef(const CharType *str, size_t length);
 
 namespace liquidpp {
 template <typename Encoding, typename Allocator>
-struct ValueConverter<rapidjson::GenericValue<Encoding, Allocator>>
+struct Accessor<rapidjson::GenericValue<Encoding, Allocator>>
     : public std::true_type {
   template <typename T> static auto get(T &&parent) {
     return [&parent](PathRef path) -> Value {
@@ -81,11 +81,11 @@ struct ValueConverter<rapidjson::GenericValue<Encoding, Allocator>>
 };
 
 template <typename Encoding, typename Allocator, typename StackAllocator>
-struct ValueConverter<
+struct Accessor<
     rapidjson::GenericDocument<Encoding, Allocator, StackAllocator>>
     : public std::true_type {
   template <typename T> static auto get(T &&parent) {
-    return ValueConverter<rapidjson::GenericValue<Encoding, Allocator>>::get(
+    return Accessor<rapidjson::GenericValue<Encoding, Allocator>>::get(
         std::forward<T>(parent));
   }
 };
