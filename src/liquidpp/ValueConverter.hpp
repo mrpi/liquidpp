@@ -21,7 +21,7 @@ namespace liquidpp {
 
 using ValueGetter = std::function<Value(PathRef)>;
 
-template <typename T> struct ValueConverter : public std::false_type {};
+template <typename T, typename = void> struct ValueConverter : public std::false_type {};
 
 template <typename T>
 struct ValueConverter<const T> : public ValueConverter<T> {};
