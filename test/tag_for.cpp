@@ -77,7 +77,7 @@ TEST_CASE("for loop on rapidjson::Document") {
   jsonDoc.Parse(json);
 
   liquidpp::Context c;
-  c.setAnonymous(jsonDoc);
+  c.setAnonymous(std::ref(jsonDoc));
 
   SECTION("value array") {
     auto rendered = liquidpp::render("{% for var in a%}{{var}} {%endfor%}", c);

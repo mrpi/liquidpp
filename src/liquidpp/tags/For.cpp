@@ -198,10 +198,9 @@ void For::render(Context &context, std::string &res) const {
 }
 
 template <> struct Accessor<For::LoopData> : public std::true_type {
-  template <typename T> static auto get(T &&loopData) {
-    return [loopData = std::forward<T>(loopData)](PathRef path)->Value {
-      return loopData.get(path);
-    };
+  template <typename T> 
+  static Value get(const T& loopData, PathRef path) {
+     return loopData.get(path);
   }
 };
 

@@ -19,8 +19,8 @@ namespace liquidpp {
 template <typename Encoding, typename Allocator>
 struct Accessor<rapidjson::GenericValue<Encoding, Allocator>>
     : public std::true_type {
-  template <typename T> static auto get(T &&parent) {
-    return [&parent](PathRef path) -> Value {
+  template <typename T>
+  static Value get(const T& parent, PathRef path) {
       using Value = rapidjson::GenericValue<Encoding, Allocator>;
       const Value *v = &parent;
       typename Value::ConstMemberIterator itr;
@@ -76,17 +76,13 @@ struct Accessor<rapidjson::GenericValue<Encoding, Allocator>>
       if (v->IsArray())
         return RangeDefinition{v->Size()};
       return ValueTag::Null;
-    };
   }
 };
 
 template <typename Encoding, typename Allocator, typename StackAllocator>
 struct Accessor<
     rapidjson::GenericDocument<Encoding, Allocator, StackAllocator>>
-    : public std::true_type {
-  template <typename T> static auto get(T &&parent) {
-    return Accessor<rapidjson::GenericValue<Encoding, Allocator>>::get(
-        std::forward<T>(parent));
-  }
+    : public Accessor<rapidjson::GenericValue<Encoding, Allocator>> {
 };
+
 }

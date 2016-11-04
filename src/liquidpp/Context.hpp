@@ -162,12 +162,22 @@ public:
            std::enable_if_t<!hasAccessor<T>, void **> = 0) {
     setLiquidValue(std::move(name), toValue(value));
   }
+  
+private:
+   template<typename T>
+   static inline auto buildAccessorFunction(T&& value)
+   {
+      return [val = std::forward<T>(value)](PathRef path) {
+        return Accessor<std::decay_t<T>>::get(val, path);
+      };
+   }
+   
+public:
 
   template <typename T>
   void set(std::string name, T &&value,
            std::enable_if_t<hasAccessor<std::decay_t<T>>, void **> = 0) {
-    mValues[name] =
-        Accessor<std::decay_t<T>>::get(std::forward<T>(value));
+    mValues[name] = buildAccessorFunction(std::forward<T>(value));
   }
 
   void setLink(std::string name, string_view referencedPath) {
@@ -186,7 +196,7 @@ public:
   }
 
   template <typename T> void setAnonymous(T &&value) {
-    mAnonymous = Accessor<std::decay_t<T>>::get(std::forward<T>(value));
+    mAnonymous = buildAccessorFunction(std::forward<T>(value));
   }
 };
 }

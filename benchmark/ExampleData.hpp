@@ -50,7 +50,7 @@ namespace liquidpp
       auto initLiquidContext()
       {
          liquidpp::Context c;
-         c.setAnonymous(rapidJsonExample());
+         c.setAnonymous(std::ref(rapidJsonExample()));
          setupDefaults(c);
          return c;
       }

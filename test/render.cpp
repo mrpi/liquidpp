@@ -157,7 +157,7 @@ namespace RenderUnitTest
          } )");
 
       liquidpp::Context c;
-      c.setAnonymous(jsonDoc);
+      c.setAnonymous(std::ref(jsonDoc));
      
       auto render = [&](auto&& str) { return liquidpp::parse(str)(c); };
 

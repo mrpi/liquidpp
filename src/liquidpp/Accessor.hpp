@@ -67,28 +67,28 @@ Value elementToValue(T &&t, PathRef path,
 }
 
 template <typename T>
-Value elementToValue(T &&t, PathRef path,
+Value elementToValue(const T& t, PathRef path,
                      std::enable_if_t<hasAccessor<T>, void **> = 0) {
-  return Accessor<T>::get(std::forward<T>(t))(path);
+  return Accessor<T>::get(t, path);
 }
 
 namespace impl {
 template <typename KeyT, typename ValueT>
 struct AssociativeContainerAccessor : public std::true_type {
-  template <typename T> static auto get(T &&map) {
-    return [map = std::forward<T>(map)](PathRef path)->Value {
-      auto key = popKey(path);
-      if (!key)
-        return ValueTag::Object;
-      if (key.isIndex())
-        return ValueTag::SubValue;
+  template <typename T>
+  static Value get(const T& map, PathRef path)
+  {
+    auto key = popKey(path);
+    if (!key)
+       return ValueTag::Object;
+    if (key.isIndex())
+       return ValueTag::SubValue;
 
-      auto itr = map.find(lex_cast<KeyT>(key.name(), "Not a valid key value!"));
-      if (itr != map.end())
-        return elementToValue(itr->second, path);
+    auto itr = map.find(lex_cast<KeyT>(key.name(), "Not a valid key value!"));
+    if (itr != map.end())
+       return elementToValue(itr->second, path);
 
-      return ValueTag::Null;
-    };
+    return ValueTag::Null;
   }
 };
 }
@@ -103,20 +103,28 @@ struct Accessor<std::unordered_map<KeyT, ValueT>>
 
 template <typename ValueT>
 struct Accessor<std::vector<ValueT>> : public std::true_type {
-  template <typename T> static auto get(T &&vec) {
-    return [vec = std::forward<T>(vec)](PathRef path)->Value {
-      auto key = popKey(path);
-      if (!key)
-        return RangeDefinition{vec.size()};
-      if (key.isName())
-        return ValueTag::SubValue;
+  template <typename T>
+  static Value get(const T& vec, PathRef path) {
+    auto key = popKey(path);
+    if (!key)
+       return RangeDefinition{vec.size()};
+    if (key.isName())
+       return ValueTag::SubValue;
 
-      auto idx = key.index();
-      if (idx < vec.size())
-        return elementToValue(vec[idx], path);
+    auto idx = key.index();
+    if (idx < vec.size())
+       return elementToValue(vec[idx], path);
 
-      return ValueTag::OutOfRange;
-    };
+    return ValueTag::OutOfRange;
   }
 };
+
+template <typename ValueT>
+struct Accessor<std::reference_wrapper<ValueT>> : public std::true_type {
+  template <typename T>
+  static inline Value get(const T& ref, PathRef path) {
+    return elementToValue(ref.get(), path);
+  }
+};
+
 }
