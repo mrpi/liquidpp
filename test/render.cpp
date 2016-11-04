@@ -168,4 +168,133 @@ namespace RenderUnitTest
       REQUIRE(render("{{GlossDiv.pi}}").substr(0, 4) == "3.14"_sv);
   }
 #endif // LIQUIDPP_HAVE_RAPIDJSON
+
+  TEST_CASE("render std::shared_ptr")
+  {
+     liquidpp::Context c;
+      auto render = [&](auto&& str) { return liquidpp::parse(str)(c); };
+     
+     c.set("shared_ptr", std::make_shared<std::string>("Hello"));
+     REQUIRE(render("{{shared_ptr}}") == "Hello");
+     
+     auto v = std::make_shared<std::vector<int>>();
+     *v = {1, 23, 42};
+     c.set("shared_ptr", v);
+     REQUIRE(render("{{shared_ptr | join: ', '}}") == "1, 23, 42");
+     
+     c.set("shared_ptr", std::shared_ptr<std::string>{});
+     REQUIRE(render("{{shared_ptr}}") == "");
+  }
+
+  TEST_CASE("render boost::optional")
+  {
+     liquidpp::Context c;
+      auto render = [&](auto&& str) { return liquidpp::parse(str)(c); };
+     
+     c.set("optional", boost::optional<std::string>{"Hello"});
+     REQUIRE(render("{{optional}}") == "Hello");
+     
+     boost::optional<std::vector<int>> v = std::vector<int>{1, 23, 42};
+     c.set("optional", v);
+     REQUIRE(render("{{optional | join: ', '}}") == "1, 23, 42");
+     
+     c.set("optional", boost::optional<std::string>{});
+     REQUIRE(render("{{optional}}") == "");
+  }
+
+  TEST_CASE("render std::weak_ptr")
+  {
+     liquidpp::Context c;
+     auto render = [&](auto&& str) { return liquidpp::parse(str)(c); };
+     
+     auto shrPtr = std::make_shared<std::string>("Hello");
+     std::weak_ptr<std::string> wp = shrPtr;
+     c.set("make_shared", wp);
+     REQUIRE(render("{{make_shared}}") == "Hello");
+     
+     shrPtr.reset();
+     REQUIRE(render("{{make_shared}}") == "");
+  }
+
+  TEST_CASE("render std::unique_ptr")
+  {
+     liquidpp::Context c;
+      auto render = [&](auto&& str) { return liquidpp::parse(str)(c); };
+     
+     auto uniqPtr = std::make_unique<std::string>("Hello");
+     c.set("unique_ptr", std::ref(uniqPtr));
+     REQUIRE(render("{{unique_ptr}}") == "Hello");
+     
+     uniqPtr.reset();
+     REQUIRE(render("{{unique_ptr}}") == "");
+  }
+
+  TEST_CASE("render raw pointer")
+  {
+     liquidpp::Context c;
+     auto render = [&](auto&& str) { return liquidpp::parse(str)(c); };
+     
+     std::string val = "Hello";
+     auto ptr = &val;
+     c.set("ptr", ptr);
+     REQUIRE(render("{{ptr}}") == "Hello");
+     
+     ptr = nullptr;
+     c.set("ptr", ptr);
+     REQUIRE(render("{{ptr}}") == "");
+  }
+
+  TEST_CASE("render std::pair")
+  {
+     liquidpp::Context c;
+     auto render = [&](auto&& str) { return liquidpp::parse(str)(c); };
+     
+     auto p = std::make_pair("Hello", 42);
+     c.set("pair", p);
+
+     REQUIRE(render("{{pair.first}}") == "Hello");
+     REQUIRE(render("{{pair.second}}") == "42");
+     REQUIRE(render("{{pair.third}}") == "");
+
+     REQUIRE(render("{{pair[0]}}") == "Hello");
+     REQUIRE(render("{{pair[1]}}") == "42");
+     REQUIRE(render("{{pair[3]}}") == "");
+  }
+
+  TEST_CASE("render std::tuple")
+  {
+     liquidpp::Context c;
+     auto render = [&](auto&& str) { return liquidpp::parse(str)(c); };
+     
+     std::vector<int> v{1, 23, 42};
+     auto t = std::make_tuple("Hello", 42, 3.14, v);
+     c.set("tuple", t);
+
+     REQUIRE(render("{{tuple[0]}}") == "Hello");
+     REQUIRE(render("{{tuple[1]}}") == "42");
+     REQUIRE(render("{{tuple[2]}}") == "3.14");
+     REQUIRE(render("{{tuple[3] | join: ', '}}") == "1, 23, 42");
+     REQUIRE(render("{{tuple[4]}}") == "");
+  }
+
+  TEST_CASE("render boost::variant")
+  {
+     liquidpp::Context c;
+     auto render = [&](auto&& str) { return liquidpp::parse(str)(c); };
+          
+     boost::variant<std::string, int, double, std::vector<int>> var;
+     c.set("variant", std::ref(var));     
+     
+     var = "Hello";
+     REQUIRE(render("{{variant}}") == "Hello");
+     
+     var = 42;
+     REQUIRE(render("{{variant}}") == "42");
+     
+     var = 3.14;
+     REQUIRE(render("{{variant}}") == "3.14");
+     
+     var = std::vector<int>{1, 23, 42};
+     REQUIRE(render("{{variant | join: ', '}}") == "1, 23, 42");
+  }
 }

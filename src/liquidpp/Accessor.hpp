@@ -5,6 +5,7 @@
 #include <string>
 #include <unordered_map>
 #include <vector>
+#include <tuple>
 
 #include <boost/lexical_cast.hpp>
 #include <boost/optional.hpp>
@@ -22,6 +23,12 @@ namespace liquidpp {
 using ValueGetter = std::function<Value(PathRef)>;
 
 template <typename T, typename = void> struct Accessor : public std::false_type {};
+
+template <>
+struct Accessor<const char*> : public std::false_type {};
+
+template <>
+struct Accessor<char*> : public Accessor<const char*> {};
 
 template <typename T>
 struct Accessor<const T> : public Accessor<T> {};
@@ -73,6 +80,7 @@ Value elementToValue(const T& t, PathRef path,
 }
 
 namespace impl {
+   
 template <typename KeyT, typename ValueT>
 struct AssociativeContainerAccessor : public std::true_type {
   template <typename T>
@@ -91,18 +99,18 @@ struct AssociativeContainerAccessor : public std::true_type {
     return ValueTag::Null;
   }
 };
-}
 
-template <typename KeyT, typename ValueT>
-struct Accessor<std::map<KeyT, ValueT>>
-    : public impl::AssociativeContainerAccessor<KeyT, ValueT> {};
+struct PointerAccessor : public std::true_type {
+  template <typename T>
+  static Value get(const T& ptr, PathRef path)
+  {
+     if (!ptr)
+        return ValueTag::Null;
+     return elementToValue(*ptr, path);
+  }
+};
 
-template <typename KeyT, typename ValueT>
-struct Accessor<std::unordered_map<KeyT, ValueT>>
-    : public impl::AssociativeContainerAccessor<KeyT, ValueT> {};
-
-template <typename ValueT>
-struct Accessor<std::vector<ValueT>> : public std::true_type {
+struct IndexContainerAccessor : public std::true_type {
   template <typename T>
   static Value get(const T& vec, PathRef path) {
     auto key = popKey(path);
@@ -118,6 +126,23 @@ struct Accessor<std::vector<ValueT>> : public std::true_type {
     return ValueTag::OutOfRange;
   }
 };
+}
+
+template <typename KeyT, typename ValueT>
+struct Accessor<std::map<KeyT, ValueT>>
+    : public impl::AssociativeContainerAccessor<KeyT, ValueT> {};
+
+template <typename KeyT, typename ValueT>
+struct Accessor<std::unordered_map<KeyT, ValueT>>
+    : public impl::AssociativeContainerAccessor<KeyT, ValueT> {};
+
+template <typename ValueT>
+struct Accessor<std::vector<ValueT>> : public impl::IndexContainerAccessor {
+};
+
+template <typename ValueT, size_t Size>
+struct Accessor<std::array<ValueT, Size>> : public impl::IndexContainerAccessor {
+};
 
 template <typename ValueT>
 struct Accessor<std::reference_wrapper<ValueT>> : public std::true_type {
@@ -127,4 +152,104 @@ struct Accessor<std::reference_wrapper<ValueT>> : public std::true_type {
   }
 };
 
+template <typename ValueT>
+struct Accessor<std::shared_ptr<ValueT>> : public impl::PointerAccessor {
+};
+
+template <typename ValueT>
+struct Accessor<boost::optional<ValueT>> : public impl::PointerAccessor {
+};
+
+template <typename ValueT>
+struct Accessor<std::unique_ptr<ValueT>> : public impl::PointerAccessor {
+};
+
+template <typename ValueT>
+struct Accessor<ValueT*> : public impl::PointerAccessor {
+};
+
+template <typename ValueT>
+struct Accessor<std::weak_ptr<ValueT>> : public std::true_type {
+  template <typename T>
+  static inline Value get(const T& ptr, PathRef path) {    
+    return elementToValue(ptr.lock(), path);
+  }
+};
+
+template <typename T1, typename T2>
+struct Accessor<std::pair<T1, T2>> : public std::true_type {
+  template <typename T>
+  static inline Value get(const T& ref, PathRef path) {
+    auto key = popKey(path);
+    if (!key)
+       return ValueTag::Object;
+    
+    if (key.isName())
+    {
+      if (key == "first")
+         return elementToValue(ref.first, path);
+      if (key == "second")
+         return elementToValue(ref.second, path);
+    }
+    else
+    {
+       switch(key.index())
+       {
+          case 0:
+             return elementToValue(std::get<0>(ref), path);
+          case 1:
+             return elementToValue(std::get<1>(ref), path);
+          default:
+             return ValueTag::OutOfRange;
+       }
+    }
+    
+    return ValueTag::Null;
+  }
+};
+
+template <typename... Args>
+struct Accessor<std::tuple<Args...>> : public std::true_type {
+  template<typename T, size_t Idx>
+  static Value getByIndex(const T& ref, PathRef path)
+  {
+    return elementToValue(std::get<Idx>(ref), path);
+  }
+  
+  template<typename T, std::size_t... Idx>
+  static constexpr auto idxAccessorsImpl(std::index_sequence<Idx...>)
+  {
+     using FuncSig = Value (*)(const T& ref, PathRef path);
+     return std::array<FuncSig, sizeof...(Idx)>{{ &getByIndex<T, Idx>... }};
+  }
+  
+  template<typename T, std::size_t N, typename Indices = std::make_index_sequence<N>>
+  static constexpr auto idxAccessors()
+  {
+     return idxAccessorsImpl<T>(Indices());
+  }
+   
+  template <typename T>
+  static inline Value get(const T& ref, PathRef path) {
+    auto key = popKey(path);
+    if (!key)
+       return RangeDefinition{sizeof...(Args)};
+    if (key.isName())
+       return ValueTag::SubValue;
+    
+    static constexpr auto idxAccess = idxAccessors<T, sizeof...(Args)>();
+    if (key.index() < sizeof...(Args))
+       return idxAccess[key.index()](ref, path);
+    
+    return ValueTag::OutOfRange;
+  }
+};
+
+template <typename... Args>
+struct Accessor<boost::variant<Args...>> : public std::true_type {
+  template <typename T>
+  static inline Value get(const T& ref, PathRef path) {
+    return boost::apply_visitor([path](auto& val){ return elementToValue(val, path); }, ref);
+  }
+};
 }

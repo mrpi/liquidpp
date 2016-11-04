@@ -52,9 +52,9 @@ constexpr auto json = R"(
       })";
 
 TEST_CASE("for loop on boost::property_tree") {
-  boost::property_tree::ptree pt;
+  auto pt = std::make_shared<boost::property_tree::ptree>();
   std::istringstream ss{json};
-  boost::property_tree::read_json(ss, pt);
+  boost::property_tree::read_json(ss, *pt);
 
   liquidpp::Context c;
   c.setAnonymous(pt);
