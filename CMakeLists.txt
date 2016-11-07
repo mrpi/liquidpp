@@ -4,7 +4,9 @@ project(liquidpp)
 INCLUDE(CheckIncludeFileCXX)
 
 find_package( Boost REQUIRED )
-include_directories(${Boost_INCLUDE_DIRS}) 
+if (PROTOBUF_FOUND)
+   include_directories(${Boost_INCLUDE_DIRS}) 
+endif (PROTOBUF_FOUND)
 
 find_package(Protobuf)
 set(LIQUIDPP_HAVE_PROTOBUF PROTOBUF_FOUND)
