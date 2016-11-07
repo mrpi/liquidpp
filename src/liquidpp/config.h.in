@@ -28,7 +28,7 @@ namespace liquidpp
    
    namespace literals
    {
-      /*TODO:constexpr*/ string_view operator""_sv(const char* str, std::size_t len)
+      /*TODO:constexpr*/ inline string_view operator""_sv(const char* str, std::size_t len)
       {
          return string_view{str, len};
       }
