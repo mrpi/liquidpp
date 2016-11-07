@@ -223,7 +223,7 @@ struct Accessor<std::tuple<Args...>> : public std::true_type {
   static constexpr auto idxAccessorsImpl(std::index_sequence<Idx...>)
   {
      using FuncSig = Value (*)(const T& ref, PathRef path);
-     return std::array<FuncSig, sizeof...(Idx)>{{ &getByIndex<T, Idx>... }};
+     return std::array<FuncSig, sizeof...(Idx)>{{ static_cast<FuncSig>(&getByIndex<T, Idx>)... }};
   }
   
   template<typename T, std::size_t N, typename Indices = std::make_index_sequence<N>>

@@ -3,10 +3,10 @@ include_directories (${liquidpp_SOURCE_DIR}/src
                      ${Boost_INCLUDE_DIRS}
                      )
 
-file(DOWNLOAD https://raw.githubusercontent.com/philsquared/Catch/master/single_include/catch.hpp ${liquidpp_SOURCE_DIR}/external/catch.hpp)
+include_directories(${CMAKE_CURRENT_BINARY_DIR})
+file(DOWNLOAD https://raw.githubusercontent.com/philsquared/Catch/master/single_include/catch.hpp ${CMAKE_CURRENT_BINARY_DIR}/catch.hpp)
 
 if (PROTOBUF_FOUND)
-   include_directories(${CMAKE_CURRENT_BINARY_DIR})
    include_directories(${PROTOBUF_INCLUDE_DIRS})
    PROTOBUF_GENERATE_CPP(PROTO_SRCS PROTO_HDRS addressbook.proto)
 endif (PROTOBUF_FOUND)
