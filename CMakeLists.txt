@@ -3,7 +3,7 @@ project(liquidpp)
 
 INCLUDE(CheckIncludeFileCXX)
 
-find_package( Boost COMPONENTS locale )
+find_package( Boost REQUIRED COMPONENTS locale )
 include_directories(${Boost_INCLUDE_DIRS}) 
 
 find_package(Protobuf)

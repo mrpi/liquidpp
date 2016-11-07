@@ -18,7 +18,7 @@ install:
   - ps: nuget install rapidjson -o "${env:APPVEYOR_BUILD_FOLDER}" -Version 1.0.2
   - C:\"Program Files (x86)"\"Microsoft Visual Studio 14.0"\VC\vcvarsall.bat
   - mkdir build && cd build
-  - cmake -DBOOST_INCLUDEDIR:PATH="C:\projects\liquidpp\boost.1.62.0.0\lib\native\include" -DBOOST_LIBRARYDIR:PATH="C:\projects\liquidpp\boost_libs" ..
+  - cmake -DBOOST_INCLUDEDIR:PATH="C:\projects\liquidpp\boost.1.62.0.0\lib\native\include" -DBOOST_LIBRARYDIR:PATH="C:\projects\liquidpp\boost_locale-vc140.1.62.0.0\lib\native\address-model-32\lib" ..
 
 build:
   project: C:/projects/liquidpp/build/ALL_BUILD.vcxproj
