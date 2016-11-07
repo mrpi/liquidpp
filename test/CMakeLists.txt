@@ -34,8 +34,12 @@ add_executable (liquidppTest
         ${PROTO_SRCS} ${PROTO_HDRS})
 
 target_link_libraries (liquidppTest
-                       liquidpp
-                       ${PROTOBUF_LIBRARIES})
+                       liquidpp)
+
+if (PROTOBUF_FOUND)
+   target_link_libraries (liquidppTest
+                          ${PROTOBUF_LIBRARIES})
+endif (PROTOBUF_FOUND)
 
 add_test(NAME liquidppTest COMMAND liquidppTest)
 
