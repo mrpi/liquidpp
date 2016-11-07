@@ -56,5 +56,5 @@ add_library (liquidpp STATIC
         liquidpp/filters/Map.hpp)
 
 target_link_libraries (liquidpp
-                       boost_locale)
+                       ${Boost_LIBRARIES})
                        
