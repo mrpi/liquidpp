@@ -5,6 +5,12 @@ include_directories (${liquidpp_SOURCE_DIR}/src
 
 file(DOWNLOAD https://raw.githubusercontent.com/philsquared/Catch/master/single_include/catch.hpp ${liquidpp_SOURCE_DIR}/external/catch.hpp)
 
+if (PROTOBUF_FOUND)
+   include_directories(${CMAKE_CURRENT_BINARY_DIR})
+   include_directories(${PROTOBUF_INCLUDE_DIRS})
+   PROTOBUF_GENERATE_CPP(PROTO_SRCS PROTO_HDRS addressbook.proto)
+endif (PROTOBUF_FOUND)
+
 add_executable (liquidppTest
         main.cpp
         block_unit_test.cpp
@@ -24,12 +30,13 @@ add_executable (liquidppTest
         forloop_object.cpp
         tag_increment.cpp
         tag_cycle.cpp
-        multiple_error_cases.cpp)
-
+        multiple_error_cases.cpp
+        ${PROTO_SRCS} ${PROTO_HDRS})
 
 target_link_libraries (liquidppTest
-                       liquidpp)
-                       
+                       liquidpp
+                       ${PROTOBUF_LIBRARIES})
+
 add_test(NAME liquidppTest COMMAND liquidppTest)
 
 add_subdirectory(fuzz)

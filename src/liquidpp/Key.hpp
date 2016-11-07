@@ -10,7 +10,7 @@
 #include <boost/variant.hpp>
 
 namespace liquidpp {
-   
+
 using OptIndex = boost::optional<size_t>;
 using KeyHolder = SmallVector<char, 64>;
 
@@ -31,9 +31,7 @@ public:
     return true;
   }
 
-  bool operator==(const Key& other) const {
-    return mData == other.mData;
-  }
+  bool operator==(const Key &other) const { return mData == other.mData; }
 
   bool operator==(string_view keyName) const {
     if (isName())

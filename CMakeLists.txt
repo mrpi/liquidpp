@@ -5,6 +5,9 @@ INCLUDE(CheckIncludeFileCXX)
 
 find_package( Boost REQUIRED )
 include_directories(${Boost_INCLUDE_DIRS}) 
+
+find_package(Protobuf)
+set(LIQUIDPP_HAVE_PROTOBUF PROTOBUF_FOUND)
     
 set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_STANDARD_REQUIRED on)

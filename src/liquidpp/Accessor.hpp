@@ -36,6 +36,9 @@ struct Accessor<const T> : public Accessor<T> {};
 template <typename T> struct Accessor<T &> : public Accessor<T> {};
 
 template <typename T>
+struct Accessor<const T&> : public Accessor<T> {};
+
+template <typename T>
 constexpr bool hasAccessor = Accessor<T>::value;
 
 inline Value toValue(Value v) { return v; }

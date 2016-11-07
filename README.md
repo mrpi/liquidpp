@@ -15,7 +15,7 @@ Features
 -----
 * Extendable with your own value types
 * Extendable with your own reflection/container types
-  (support for std::vector, std::map, RapidJSON and boost::property_tree included)
+  (support for std::vector, std::map, std::tuple, boost::variant, boost::property_tree, RapidJSON and Google ProtoBuf included)
 * Fast rendering (you can cache parsed templates and context objects)
 * Optimized for speed (no regular expressions and few allocations)
 

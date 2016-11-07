@@ -3,3 +3,5 @@
 #include "BoostPropertyTree.hpp"
 
 #include "RapidJSON.hpp"
+
+#include "ProtoBuf.hpp"
