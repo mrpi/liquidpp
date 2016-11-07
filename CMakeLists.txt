@@ -4,12 +4,12 @@ project(liquidpp)
 INCLUDE(CheckIncludeFileCXX)
 
 find_package( Boost REQUIRED )
-if (PROTOBUF_FOUND)
-   include_directories(${Boost_INCLUDE_DIRS}) 
-endif (PROTOBUF_FOUND)
+include_directories(${Boost_INCLUDE_DIRS}) 
 
 find_package(Protobuf)
-set(LIQUIDPP_HAVE_PROTOBUF PROTOBUF_FOUND)
+if (PROTOBUF_FOUND)
+   set(LIQUIDPP_HAVE_PROTOBUF PROTOBUF_FOUND)
+endif (PROTOBUF_FOUND)
     
 set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_STANDARD_REQUIRED on)
