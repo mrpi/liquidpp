@@ -30,5 +30,5 @@ build:
   project: C:/projects/liquidpp/build/ALL_BUILD.vcxproj
 
 test_script:
-  - C:\projects\liquidpp\build\test\Debug\liquidppTest.exe
-  #- ctest --build-config %configuration% --output-on-failure --test-output-size-passed 2048
+  #- C:\projects\liquidpp\build\test\Debug\liquidppTest.exe
+  - ctest --build-config %configuration% --output-on-failure --test-output-size-passed 2048
