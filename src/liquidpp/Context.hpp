@@ -9,7 +9,6 @@
 #include <boost/optional.hpp>
 #include <boost/variant/get.hpp>
 #include <boost/variant/variant.hpp>
-#include <boost/locale.hpp>
 
 #include "config.h"
 
@@ -27,7 +26,7 @@ private:
   using StorageT = std::map<std::string, MapValue, std::less<void>>;
   StorageT mValues;
   ValueGetter mAnonymous;
-  boost::optional<std::locale> mLocale{boost::locale::generator{}("")};
+  boost::optional<std::locale> mLocale{std::locale("")};
 
   size_t mMaxOutputSize{8 * 1024 * 1024};
   size_t mMinOutputPer1024Loops{mMaxOutputSize / 4};

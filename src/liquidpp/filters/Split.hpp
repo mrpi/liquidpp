@@ -28,7 +28,7 @@ struct Split : public Filter
          r.reserve(sv.size());
          while(true)
          {
-            auto ch = utf8::popChar(sv);
+            auto ch = utf8::popU8Char(sv);
             if (ch.empty())
                break;
             r.push_back(ch.to_string());

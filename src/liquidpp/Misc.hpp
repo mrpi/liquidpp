@@ -93,7 +93,7 @@ namespace utf8 {
       return isValid(str.data(), str.size());
    }
    
-   inline string_view popChar(string_view& sv)
+   inline string_view popU8Char(string_view& sv)
    {
       if (sv.empty())
          return string_view{};
@@ -123,6 +123,56 @@ namespace utf8 {
       return res;
    }
    
+   inline boost::optional<char32_t> popU32Char(string_view& sv)
+   {
+      auto u8Char = popU8Char(sv);
+       
+      switch(u8Char.size())
+      {
+      case 0:
+         return boost::none;
+      case 1:
+         return static_cast<char32_t>(u8Char[0]);
+      case 2:
+         return ((u8Char[0] << 6) & 0x7ff) + (u8Char[1] & 0x3f);
+      case 3:
+         return ((u8Char[0] << 12) & 0xffff)
+              + ((u8Char[1] << 6) & 0xfff) 
+              +  (u8Char[2] & 0x3f);
+      case 4:
+         return ((u8Char[0] << 18) & 0x1fffff)
+              + ((u8Char[1] << 12) & 0x3ffff)
+              + ((u8Char[2] << 6) & 0xfff)
+              +  (u8Char[3] & 0x3f);
+      }
+      
+      throw Exception("Utf8 parsing error!", sv);
+   }
+   
+   template <typename Utf8Container>
+   Utf8Container& append(Utf8Container& res, char32_t cp)
+   {
+      if (cp < 0x80)
+         res += static_cast<uint8_t>(cp);
+      else if (cp < 0x800) {
+         res += static_cast<uint8_t>((cp >> 6) | 0xc0);
+         res += static_cast<uint8_t>((cp & 0x3f) | 0x80);
+      }
+      else if (cp < 0x10000) {
+         res += static_cast<uint8_t>((cp >> 12) | 0xe0);
+         res += static_cast<uint8_t>(((cp >> 6) & 0x3f) | 0x80);
+         res += static_cast<uint8_t>((cp & 0x3f) | 0x80);
+      }
+      else {
+         res += static_cast<uint8_t>((cp >> 18) | 0xf0);
+         res += static_cast<uint8_t>(((cp >> 12) & 0x3f) | 0x80);
+         res += static_cast<uint8_t>(((cp >> 6) & 0x3f) | 0x80);
+         res += static_cast<uint8_t>((cp & 0x3f) | 0x80);
+      }
+      
+      return res;
+}
+   
    inline string_view substr(string_view sv, size_t startIdx, size_t len)
    {
       size_t pos = 0;
@@ -130,14 +180,14 @@ namespace utf8 {
       while(pos < startIdx)
       {
          pos++;
-         if (popChar(sv).empty())
+         if (popU8Char(sv).empty())
             throw std::out_of_range("Out of range on utf8::substr!");
       }
       
       auto start = sv.data();
       for(size_t i=0; i < len; i++)
       {
-         if (popChar(sv).empty())
+         if (popU8Char(sv).empty())
             break;
       }
       
@@ -149,7 +199,7 @@ namespace utf8 {
    {
       size_t len = 0;
       
-      while(!popChar(sv).empty())
+      while(!popU8Char(sv).empty())
          len++;
 
       return len;
