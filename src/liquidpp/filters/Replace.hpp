@@ -10,29 +10,14 @@ namespace liquidpp
 namespace filters
 {
 
-struct Replace : public Filter
+struct Replace
 {
-   Expression::Token toRemoveToken;
-   Expression::Token replacementToken;
-
-   virtual Value operator()(Context& c, Value&& val) const override final
+   Value operator()(Value&& val, Value&& toRemove, Value&& replacement) const
    {
       auto str = val.toString();
-      auto toRemove = Expression::value(c, toRemoveToken).toString();
-      auto replacement = Expression::value(c, replacementToken).toString();
 
-      boost::algorithm::replace_all(str, toRemove, replacement);
+      boost::algorithm::replace_all(str, toRemove.toString(), replacement.toString());
       return std::move(str);
-   }
-
-   virtual void addAttribute(string_view sv) override final
-   {
-      if (toRemoveToken == Expression::Token{})
-         toRemoveToken = Expression::toToken(sv);
-      else if (replacementToken == Expression::Token{})
-         replacementToken = Expression::toToken(sv);
-      else
-         throw Exception("Too many arguments for filter!", sv);
    }
 };
 

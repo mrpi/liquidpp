@@ -43,14 +43,6 @@ bool Expression::isWhitespace(char c) {
   return false;
 }
 
-bool Expression::isAsciiAlpha(char c) {
-  if (c >= 'a' && c <= 'z')
-    return true;
-  if (c >= 'A' && c <= 'Z')
-    return true;
-  return false;
-}
-
 namespace {
 inline bool isOperatorChar(char c) {
   if (c == '=')
@@ -255,7 +247,7 @@ Expression::Token Expression::toToken(string_view tokenStr) {
     break;
   case 'f':
     if (tokenStr == "false")
-      return Value::fromBool(false);
+      return Value{false};
     break;
   case 'o':
     if (tokenStr == "or")
@@ -263,7 +255,7 @@ Expression::Token Expression::toToken(string_view tokenStr) {
     break;
   case 't':
     if (tokenStr == "true")
-      return Value::fromBool(true);
+      return Value{true};
     break;
   case '\'':
   case '"':
@@ -282,9 +274,9 @@ Expression::Token Expression::toToken(string_view tokenStr) {
   case '8':
   case '9':
     if (isInteger(tokenStr))
-      return Value::fromIntegral(lex_cast<std::int64_t>(tokenStr));
+      return Value{lex_cast<std::int64_t>(tokenStr)};
     else if (isFloat(tokenStr))
-      return Value::fromFloatingPoint(lex_cast<double>(tokenStr));
+      return Value{lex_cast<double>(tokenStr)};
     else
       throw Exception("Token is starting with a digit but not a valid number!",
                       tokenStr);
@@ -391,7 +383,12 @@ Value Expression::value(Context &c, const Token &t,
       if (res.isRange())
         inlineRangeValues(c, res.range(), path);
 
-      res = (*filter)(c, std::move(res));
+      filters::FilterArgs args;
+      args.reserve(filter.args.size());
+      for (auto&& arg : filter.args)
+         args.push_back(value(c, arg));
+      
+      res = filter.function(c, std::move(res), std::move(args));
     }
   }
 
@@ -442,9 +439,9 @@ Value Expression::operator()(Context &c) const {
   Operator lastOperator = Operator::Or;
   auto putToRes = [&](bool v) {
     if (lastOperator == Operator::Or)
-      res |= Value::fromBool(v);
+      res |= Value{v};
     else
-      res &= Value::fromBool(v);
+      res &= Value{v};
   };
 
   const size_t cnt = tokens.size();

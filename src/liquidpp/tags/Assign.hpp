@@ -12,7 +12,7 @@ namespace liquidpp {
 struct Assign : public Tag {
    string_view variableName;
    Expression::Token assignment;
-   SmallVector<std::shared_ptr<filters::Filter>, 2> filterChain;
+   Expression::FilterChain filterChain;
 
    template<typename FilterFactoryT>
    Assign(const FilterFactoryT& filterFac, Tag&& tag)

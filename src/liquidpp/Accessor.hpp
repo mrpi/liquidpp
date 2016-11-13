@@ -51,13 +51,13 @@ template <size_t Len> Value toValue(const char (&v)[Len]) {
   return Value(std::string{v});
 }
 
-inline Value toValue(bool b) { return Value::fromBool(b); }
+inline Value toValue(bool b) { return b; }
 
 template <typename T>
 Value toValue(
     T t, std::enable_if_t<!hasAccessor<T> && std::is_integral<T>::value,
                           void **> = 0) {
-  return Value::fromIntegral(t);
+  return t;
 }
 
 template <typename T>
@@ -65,7 +65,7 @@ Value toValue(
     T t,
     std::enable_if_t<!hasAccessor<T> && std::is_floating_point<T>::value,
                      void **> = 0) {
-  return Value::fromFloatingPoint(t);
+  return t;
 }
 
 template <typename T>

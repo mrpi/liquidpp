@@ -17,9 +17,9 @@ BlockBody parseFlat(string_view content);
 namespace
 {
 inline string_view popString(string_view& str) {
-   auto len = str.size();
+   const auto len = str.size();
    for (size_t i = 0; i < len; i++) {
-      auto c = str[i];
+      const auto c = str[i];
       if (c == '{' || c == '%') {
          if (i != 0 && str[i-1] == '{') {
             auto res = str.substr(0, i-1);
@@ -80,10 +80,17 @@ inline string_view popVariable(string_view& str, bool& stripNextString) {
    throw Exception("Unterminated tag!", str.substr(0, 2));
 }
 
-template<typename FilterFactoryT>
-void fastParser(string_view content, BlockBody& flatNodes)
+struct BlockItem
 {
-   auto& nodes = flatNodes.nodeList;
+   BlockBody* body;
+   boost::optional<std::string> endTagName;
+};
+
+template<typename TagFactoryT, typename FilterFactoryT>
+void fastParser(string_view content, BlockBody& rootBlock)
+{
+   SmallVector<BlockItem, 4> stack{{&rootBlock}};
+   auto block = &stack.back();
 
    enum class State
    {
@@ -117,64 +124,62 @@ void fastParser(string_view content, BlockBody& flatNodes)
       switch(getType(content))
       {
          case State::String:
-            flatNodes.nodeList.emplace_back(popString(content));
+            block->body->nodeList.emplace_back(popString(content));
             break;
          case State::Tag:
          {
-            auto tagStr = popTag(content, stripLeadingWhitespace);
-            nodes.emplace_back(UnevaluatedTag{tagStr});
+            UnevaluatedTag rawTag{popTag(content, stripLeadingWhitespace)};
+            if (block->endTagName && rawTag.name == *block->endTagName)
+            {
+               stack.resize(stack.size()-1);
+               block = &stack.back();
+            }
+            else
+            {
+               auto tag = TagFactoryT{}(FilterFactoryT{}, std::move(rawTag));
+               if (tag)
+               {
+                  auto subBlock = dynamic_cast<Block*>(tag.get());
+                  block->body->nodeList.push_back(std::move(tag));
+                  if (subBlock)
+                  {
+                     std::string endTagName = "end";
+                     endTagName.append(subBlock->name.data(), subBlock->name.size());
+                     stack.push_back({&subBlock->body, std::move(endTagName)});
+                     block = &stack.back();
+                  }
+               }
+               else
+                  block->body->nodeList.push_back(std::move(rawTag));
+            }
             break;
          }
          case State::Variable:
          {
             auto varStr = popVariable(content, stripLeadingWhitespace);
-            nodes.emplace_back(Variable{FilterFactoryT{}, varStr});
+            varStr.remove_prefix(varStr[2] == '-' ? 3 : 2);
+            if (varStr.size() < 3)
+               throw Exception("Tag is too short!", varStr);
+            varStr.remove_suffix(varStr[varStr.size() - 3] == '-' ? 3 : 2);
+            
+            auto tokens = Expression::splitTokens(varStr);
+            switch(tokens.size())
+            {
+            case 0:
+               throw Exception("Variable definition without token!", varStr);
+            case 1:
+               block->body->nodeList.emplace_back(Variable(Expression::toToken(tokens[0])));
+               break;
+            default:
+               block->body->nodeList.emplace_back(Variable(Expression::toToken(tokens[0]), Expression::toFilterChain(FilterFactoryT{}, tokens, 1)));
+               break;
+            }
+
             break;
          }
       }
    }
 }
-}
-
-template<typename TagFactoryT, typename FilterFactoryT, typename Iterator>
-BlockBody buildBlocks(Iterator& itr, const Iterator& end, string_view openBockTag = string_view{}) {
-   BlockBody res;
-   res.nodeList.reserve(end - itr);
-
-   std::string endTagName;
-   if (!openBockTag.empty())
-   {
-      endTagName = "end";
-      endTagName.append(openBockTag.data(), openBockTag.size());
-   }
-
-   for (; itr != end; ++itr) {
-      auto& node = *itr;
-
-      auto nodeType = type(node);
-      if (nodeType == NodeType::UnevaluatedTag) {
-         auto& rawTag = boost::get<UnevaluatedTag>(node);
-         if (rawTag.name == endTagName)
-            break;
-
-         auto tag = TagFactoryT{}(FilterFactoryT{}, std::move(rawTag));
-         if (tag) {
-            auto block = dynamic_cast<Block*>(tag.get());
-            if (block)
-               // TODO: get rid of recursion
-               block->body = buildBlocks<TagFactoryT, FilterFactoryT>(++itr, end, tag->name);
-
-            node = std::move(tag);
-         }
-      }
-
-      res.nodeList.push_back(std::move(node));
-   }
-
-   if (itr == end && !endTagName.empty())
-      throw Exception("Missing closing tag '{%" + endTagName + "%}'", openBockTag);
-
-   return res;
 }
 
 }
@@ -185,18 +190,17 @@ Template parse(string_view content) {
    ast.root.templateRange = content;
    
    try {
-      BlockBody flatNodes;
-      impl::fastParser<FilterFactoryT>(content, flatNodes);
+      impl::fastParser<TagFactoryT, FilterFactoryT>(content, ast.root);
 
-      auto itr = flatNodes.nodeList.begin();
-      ast.root = impl::buildBlocks<TagFactoryT, FilterFactoryT>(itr, flatNodes.nodeList.end());
+      //auto itr = flatNodes.nodeList.begin();
+      //ast.root = impl::buildBlocks<TagFactoryT, FilterFactoryT>(itr, flatNodes.nodeList.end());
       ast.root.templateRange = content;
-
-      return ast;
    } catch(Exception& e) {
       e.position() = ast.findPosition(e.errorPart());
       throw;
    }
+
+   return ast;
 }
 }
 

@@ -7,7 +7,7 @@ namespace liquidpp
 namespace filters
 {
 
-struct StripHtml : public Filter
+struct StripHtml
 {
    static std::string stripX(string_view str, string_view start, string_view end)
    {
@@ -39,7 +39,7 @@ struct StripHtml : public Filter
       return res;
    }
 
-   virtual Value operator()(Context& c, Value&& val) const override final
+   Value operator()(Value&& val) const
    {
       if (!val.isStringViewRepresentable())
          return std::move(val);

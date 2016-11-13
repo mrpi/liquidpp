@@ -8,15 +8,12 @@ namespace liquidpp
 namespace filters
 {
 
-struct Round : public Filter
+struct Round
 {
-   Expression::Token token{toValue(0)};
-
-   virtual Value operator()(Context& c, Value&& val) const override final
+   Value operator()(Value&& val, Value&& arg1) const
    {
-      auto arg1 = Expression::value(c, token);
       std::ostringstream oss;
-      oss << std::fixed << std::setprecision(arg1.integralValue());
+      oss << std::fixed << std::setprecision(arg1 ? arg1.integralValue() : 0);
 
       if (val.isFloatingPoint())
          oss << val.floatingPointValue();
@@ -24,11 +21,6 @@ struct Round : public Filter
          oss << val.integralValue();
 
       return oss.str();
-   }
-
-   virtual void addAttribute(string_view sv) override final
-   {
-      token = Expression::toToken(sv);
    }
 };
 

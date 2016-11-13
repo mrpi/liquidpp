@@ -8,16 +8,15 @@ namespace liquidpp
 namespace filters
 {
 
-struct Split : public Filter
+struct Split
 {
    Expression::Token separatorToken;
 
-   virtual Value operator()(Context& c, Value&& val) const override final
+   Value operator()(Value&& val, Value&& sepVal) const
    {
       if (!val.isStringViewRepresentable())
          return std::move(val);
 
-      auto sepVal = Expression::value(c, separatorToken);
       auto separator = *sepVal;
 
       RangeDefinition::InlineValues r;
@@ -52,14 +51,6 @@ struct Split : public Filter
       }
 
       return RangeDefinition{std::move(r)};
-   }
-
-   virtual void addAttribute(string_view sv) override final
-   {
-      if (separatorToken == Expression::Token{})
-         separatorToken = Expression::toToken(sv);
-      else
-         throw Exception("Too many attributes!", sv);
    }
 };
 

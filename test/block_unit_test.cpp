@@ -25,7 +25,8 @@ namespace BlockUnitTest
   TEST_CASE("blankspace", TestTags)
   {
     auto template_ = liquidpp::parse("  ");
-    REQUIRE((template_.root.nodeList == NodeList{"  "}));
+    REQUIRE((template_.root.nodeList.size() == 1));
+    REQUIRE((boost::get<liquidpp::string_view>(template_.root.nodeList[0]) == "  "));
   }
 
   TEST_CASE("variable_beginning", TestTags)

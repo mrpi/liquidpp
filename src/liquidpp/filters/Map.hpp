@@ -7,17 +7,15 @@
 namespace liquidpp {
 namespace filters {
 
-struct Map : public Filter {
-  Expression::Token subValueToken;
-
-  virtual Value operator()(Context &c, Value &&val) const override final {
+struct Map {
+  Value operator()(Context& c, Value &&val, Value&& subVal) const {
     if (!val.isRange())
       return std::move(val);
     
     Value res = RangeDefinition{RangeDefinition::InlineValues{}};
     auto& out = res.range().inlineValues();
 
-    auto subValue = Expression::value(c, subValueToken).toString();
+    auto subValue = subVal.toString();
     auto &range = val.range();
     auto basePath = range.rangePath();
     if (basePath.empty())
@@ -41,13 +39,6 @@ struct Map : public Filter {
     }
 
     return res;
-  }
-
-  virtual void addAttribute(string_view sv) override final {
-    if (subValueToken == Expression::Token{})
-      subValueToken = Expression::toToken(sv);
-    else
-      throw Exception("Too many attributes!", sv);
   }
 };
 }

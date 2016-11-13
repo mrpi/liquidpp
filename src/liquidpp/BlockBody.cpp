@@ -22,7 +22,7 @@ void renderNode(Context& context, const Node& node, std::string& res)
       }
       case NodeType::Tag:
       {
-         auto& renderable = *boost::get<std::shared_ptr<const IRenderable>>(node);
+         auto& renderable = *boost::get<std::unique_ptr<const IRenderable>>(node);
          renderable.render(context, res);
          break;
       }

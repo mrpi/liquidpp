@@ -23,11 +23,15 @@ std::ostream &operator<<(std::ostream &os, NodeType t) {
 std::string Template::operator()(const Context &context) const {
   try {
     std::string res;
+    auto maxResSize = mMaxResultSize;
+    res.reserve(maxResSize);
     Context mutableScopedContext{&context};
 
     for (auto &&node : root.nodeList)
       renderNode(mutableScopedContext, node, res);
 
+    if (res.size() > maxResSize)
+       mMaxResultSize = res.size();
     return res;
   } catch (Exception &e) {
     e.position() = findPosition(e.errorPart());

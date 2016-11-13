@@ -14,10 +14,10 @@ TEST_CASE("parse if tag")
    {
       templ = liquidpp::parse("{% if var %} {%endif%}");
       REQUIRE(templ.root.nodeList.size() == 1);
-      auto tagPtr = boost::get<std::shared_ptr<const liquidpp::IRenderable>>(templ.root.nodeList[0]);
+      auto& tagPtr = boost::get<std::unique_ptr<const liquidpp::IRenderable>>(templ.root.nodeList[0]);
       REQUIRE(tagPtr);
 
-      auto ifTag = std::dynamic_pointer_cast<const liquidpp::If>(tagPtr);
+      auto ifTag = dynamic_cast<const liquidpp::If*>(tagPtr.get());
       REQUIRE(ifTag);
       REQUIRE(ifTag->expression.tokens.size() == 1);
       //REQUIRE((ifTag->expression.tokens[0] == liquidpp::Expression::VariableName{"var"}));
@@ -27,9 +27,9 @@ TEST_CASE("parse if tag")
    {
       auto templ = liquidpp::parse("{%if var == '123'%} {%endif%}");
       REQUIRE(templ.root.nodeList.size() == 1);
-      auto tagPtr = boost::get<std::shared_ptr<const liquidpp::IRenderable>>(templ.root.nodeList[0]);
+      auto& tagPtr = boost::get<std::unique_ptr<const liquidpp::IRenderable>>(templ.root.nodeList[0]);
       REQUIRE(tagPtr);
-      auto ifTag = std::dynamic_pointer_cast<const liquidpp::If>(tagPtr);
+      auto ifTag = dynamic_cast<const liquidpp::If*>(tagPtr.get());
       REQUIRE(ifTag);
       REQUIRE(ifTag->expression.tokens.size() == 3);
    }

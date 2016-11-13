@@ -75,7 +75,7 @@ public:
 #endif
 };
 
-using Path = SmallVector<Key, 8>;
+using Path = SmallVector<Key, 4>;
 using PathRef = gsl::span<const Key>;
 
 inline Path operator+(Key key, PathRef tail) {

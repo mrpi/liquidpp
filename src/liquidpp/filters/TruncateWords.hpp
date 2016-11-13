@@ -6,11 +6,8 @@
 namespace liquidpp {
 namespace filters {
 
-struct TruncateWords : public Filter {
-  Expression::Token maxWordCountToken;
-  Expression::Token ellipsisToken;
-
-  virtual Value operator()(Context &c, Value &&val) const override final {
+struct TruncateWords {
+  Value operator()(Value &&val, Value&& maxWordCountVal, Value&& ellipsisVal) const {
     if (!val.isStringViewRepresentable())
       return std::move(val);
 
@@ -20,11 +17,10 @@ struct TruncateWords : public Filter {
     res.reserve(sv.size());
 
     size_t wordCount = 0;
-    auto maxWordCount = static_cast<size_t>(
-        Expression::value(c, maxWordCountToken).integralValue());
+    auto maxWordCount = static_cast<size_t>(maxWordCountVal.integralValue());
     std::string ellips = "...";
-    if (!(ellipsisToken == Expression::Token{}))
-      ellips = Expression::value(c, ellipsisToken).toString();
+    if (ellipsisVal)
+      ellips = ellipsisVal.toString();
 
     bool lastWasWhitespace = true;
     for (auto c : sv) {
@@ -45,15 +41,6 @@ struct TruncateWords : public Filter {
       res += ellips;
 
     return std::move(res);
-  }
-
-  virtual void addAttribute(string_view sv) override final {
-    if (maxWordCountToken == Expression::Token{})
-      maxWordCountToken = Expression::toToken(sv);
-    else if (ellipsisToken == Expression::Token{})
-      ellipsisToken = Expression::toToken(sv);
-    else
-      throw Exception("Too many attributes!", sv);
   }
 };
 }

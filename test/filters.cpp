@@ -35,11 +35,11 @@ TEST_CASE("Filter: size") {
         {"pages", {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10}}};
     c.set("site", m);
 
-    auto rendered = liquidpp::render(R"({% if site.pages.size > 10 -%}
-  This is a big website!
-{%- endif %})",
-                                     c);
+    auto rendered = liquidpp::render("{% if site.pages.size > 10 %}This is a big website!{% endif %}", c);
     REQUIRE(rendered == "This is a big website!");
+    
+    rendered = liquidpp::render("{{ site.pages | size }}", c);
+    REQUIRE(rendered == "11");
   }
 }
 
@@ -93,6 +93,7 @@ TEST_CASE("Filter: date") {
 
 TEST_CASE("Filter: downcase") {
   liquidpp::Context c;
+  c.setLocale(std::locale(""));
 
   {
     auto rendered = liquidpp::render(R"({{ "Parker Moore" | downcase }})", c);
@@ -112,6 +113,7 @@ TEST_CASE("Filter: downcase") {
 
 TEST_CASE("Filter: upcase") {
   liquidpp::Context c;
+  c.setLocale(std::locale(""));
 
   {
     auto rendered = liquidpp::render(R"({{ "Parker Moore" | upcase }})", c);
@@ -132,6 +134,7 @@ TEST_CASE("Filter: upcase") {
 
 TEST_CASE("Filter: capitalize") {
   liquidpp::Context c;
+  c.setLocale(std::locale(""));
 
   {
     auto rendered = liquidpp::render(R"({{ "title" | capitalize }})", c);

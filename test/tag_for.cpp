@@ -15,11 +15,11 @@ using namespace liquidpp::literals;
 TEST_CASE("parse for tag") {
   auto templ = liquidpp::parse("{%for var in range%} {%endfor%}");
   REQUIRE(templ.root.nodeList.size() == 1);
-  auto tagPtr = boost::get<std::shared_ptr<const liquidpp::IRenderable>>(
+  auto& tagPtr = boost::get<std::unique_ptr<const liquidpp::IRenderable>>(
       templ.root.nodeList[0]);
   REQUIRE(tagPtr);
 
-  auto forTag = std::dynamic_pointer_cast<const liquidpp::For>(tagPtr);
+  auto forTag = dynamic_cast<const liquidpp::For*>(tagPtr.get());
   REQUIRE(forTag);
   REQUIRE(forTag->loopVariable == "var");
   REQUIRE(forTag->rangePath == liquidpp::Path{liquidpp::Key{"range"}});

@@ -10,9 +10,9 @@ namespace liquidpp
 namespace filters
 {
 
-struct Downcase : public Filter
+struct Downcase
 {
-   virtual Value operator()(Context& c, Value&& val) const override final
+   Value operator()(Context& c, Value&& val) const
    {
       if (!val.isStringViewRepresentable())
          return std::move(val);

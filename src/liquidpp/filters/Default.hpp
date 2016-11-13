@@ -8,11 +8,9 @@ namespace liquidpp
 namespace filters
 {
 
-struct Default : public Filter
+struct Default
 {
-   Expression::Token defaultValue;
-
-   virtual Value operator()(Context& c, Value&& val) const override final
+   Value operator()(Value&& val, Value&& defaultValue) const
    {
       if (val)
       {
@@ -21,12 +19,7 @@ struct Default : public Filter
             return std::move(val);
       }
 
-      return Expression::value(c, defaultValue);
-   }
-
-   virtual void addAttribute(string_view sv) override final
-   {
-      defaultValue = Expression::toToken(sv);
+      return defaultValue;
    }
 };
 

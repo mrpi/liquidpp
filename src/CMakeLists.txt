@@ -23,17 +23,14 @@ add_library (liquidpp STATIC
         liquidpp/tags/Assign.hpp liquidpp/tags/Assign.cpp
         liquidpp/filters/Filter.hpp
         liquidpp/filters/Escape.hpp
-        liquidpp/filters/Size.hpp
         liquidpp/filters/Downcase.hpp
         liquidpp/filters/Upcase.hpp
         liquidpp/filters/Capitalize.hpp
-        liquidpp/filters/Assign.hpp
         liquidpp/filters/NumberFilter.hpp
         liquidpp/filters/Default.hpp
         liquidpp/filters/FloatFilter.hpp
         liquidpp/filters/Lstrip.hpp
         liquidpp/filters/NewlineToBr.hpp 
-        liquidpp/filters/Prepend.hpp
         liquidpp/filters/Remove.hpp
         liquidpp/filters/RemoveFirst.hpp
         liquidpp/filters/Replace.hpp

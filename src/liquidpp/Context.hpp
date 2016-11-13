@@ -9,6 +9,7 @@
 #include <boost/optional.hpp>
 #include <boost/variant/get.hpp>
 #include <boost/variant/variant.hpp>
+#include <boost/container/flat_map.hpp>
 
 #include "config.h"
 
@@ -17,16 +18,22 @@
 
 #include "accessors/Accessors.hpp"
 
+#include "external/short_alloc.h"
+
 namespace liquidpp {
 class Context {
 private:
   const Context *mParent{nullptr};
   Context *mDocumentScopeContext{nullptr};
   using MapValue = boost::variant<Value, ValueGetter>;
-  using StorageT = std::map<std::string, MapValue, std::less<void>>;
-  StorageT mValues;
+
+  using StorageAllocator = hhinnant::short_alloc<std::pair<const std::string, MapValue>, 256>;
+  using StorageT = std::map<std::string, MapValue, std::less<void>, StorageAllocator>;
+  
+  StorageAllocator::arena_type mArena;
+  StorageT mValues{StorageAllocator{mArena}};
   ValueGetter mAnonymous;
-  boost::optional<std::locale> mLocale{std::locale("")};
+  boost::optional<std::locale> mLocale{std::locale()};
 
   size_t mMaxOutputSize{8 * 1024 * 1024};
   size_t mMinOutputPer1024Loops{mMaxOutputSize / 4};
@@ -52,7 +59,7 @@ public:
   }
 
   Context(std::initializer_list<StorageT::value_type> entries)
-      : mValues(entries) {}
+      : mValues(entries, StorageAllocator{mArena}) {}
       
   const std::locale& locale() const
   {
@@ -128,7 +135,7 @@ private:
       return ValueTag::SubValue;
     }
 
-    return boost::get<Value>(itr->second);
+    return boost::get<Value>(itr->second).asReference();
   }
 
 public:
@@ -146,10 +153,10 @@ public:
         return res;
     }
 
-    if (mParent)
-      return mParent->get(path);
-
-    return ValueTag::Null;
+    if (mParent == nullptr)
+       return ValueTag::Null;
+      
+    return mParent->get(path);
   }
 
   void setLiquidValue(std::string name, Value value) {

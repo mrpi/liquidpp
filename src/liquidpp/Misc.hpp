@@ -8,6 +8,22 @@ namespace liquidpp
 {
    
 class Exception;
+   
+template<typename E = std::runtime_error>
+inline void enforce(bool t, const char* what)
+{
+   if (t)
+      return;
+   throw E(what);
+}
+
+template<typename E = std::runtime_error>
+inline void enforce(bool t, const std::string& what)
+{
+   if (t)
+      return;
+   throw E(what);
+}
 
 template<typename T>
 auto lex_cast(string_view in, const char* msg = nullptr)
@@ -193,8 +209,7 @@ namespace utf8 {
       
       return {start, static_cast<size_t>(sv.data() - start)};
    }
-   
-      
+         
    inline size_t characterCount(string_view sv)
    {
       size_t len = 0;

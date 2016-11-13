@@ -10,9 +10,9 @@ namespace liquidpp
 namespace filters
 {
 
-struct Upcase : public Filter
+struct Upcase
 {
-   virtual Value operator()(Context& c, Value&& val) const override final
+   Value operator()(Context& c, Value&& val) const
    {
       if (!val.isStringViewRepresentable())
          return std::move(val);

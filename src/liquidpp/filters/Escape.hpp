@@ -8,9 +8,9 @@ namespace liquidpp
 namespace filters
 {
 
-struct Escape : public Filter
+struct Escape
 {
-   virtual Value operator()(Context& c, Value&& val) const override final
+   Value operator()(Value&& val) const
    {
       if (!val.isStringViewRepresentable())
          return std::move(val);
@@ -49,7 +49,7 @@ struct Escape : public Filter
    }
 };
 
-struct EscapeOnce : public Filter
+struct EscapeOnce
 {
    static bool isStartOfValidEscapeSequence(string_view s)
    {
@@ -82,7 +82,7 @@ struct EscapeOnce : public Filter
       return false;
    }
 
-   virtual Value operator()(Context& c, Value&& val) const override final
+   Value operator()(Value&& val) const
    {
       if (!val.isStringViewRepresentable())
          return std::move(val);

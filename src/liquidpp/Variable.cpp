@@ -14,7 +14,7 @@ bool Variable::operator==(const Variable& other) const {
 }
 
 void Variable::render(Context& context, std::string& out) const {
-   auto&& val = Expression::value(context, variable, filterChain);
+   auto&& val = Expression::value(context, variable, filterChain ? boost::optional<const Expression::FilterChain&>{*filterChain} : boost::none);
 
    if (val.isStringViewRepresentable())
    {
@@ -22,6 +22,7 @@ void Variable::render(Context& context, std::string& out) const {
       out.append(sv.data(), sv.size());
    }
    else
+      // Mostly int -> string (should fit in small string optimizations)
       out += val.toString();
 }
 }

@@ -7,9 +7,9 @@ namespace liquidpp
 namespace filters
 {
 
-struct NewlineToBr : public Filter
+struct NewlineToBr
 {
-   virtual Value operator()(Context& c, Value&& val) const override final
+   Value operator()(Value&& val) const
    {
       if (!val.isStringViewRepresentable())
          return std::move(val);

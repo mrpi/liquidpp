@@ -1,10 +1,17 @@
 // runner file contents
 #define NONIUS_RUNNER
-//#include <nonius/nonius_single.h++>
+#include <nonius/nonius_single.h++>
 
 #include <thread>
+#include <iostream>
 
 #include <liquidpp.hpp>
+
+auto renderNoCaching = [](){
+    liquidpp::Context c;
+    c.set("name", "Donald Drumpf");
+    return liquidpp::parse("Hello {{name}}!")(c);
+};
 
 #ifdef NONIUS_HPP
 
@@ -20,19 +27,26 @@ NONIUS_BENCHMARK("Hello {{name}}! (std::ostringstream)", [](nonius::chronometer 
     });
 })
 
-NONIUS_BENCHMARK("Hello {{name}}! (no caching)", []{
-    liquidpp::Context c;
-    c.set("name", "Donald Drumpf");
-    return liquidpp::parse("Hello {{name}}!")(c);
+NONIUS_BENCHMARK("Hello {{name}}! (no caching)", [](nonius::chronometer meter){
+   renderNoCaching();
+   renderNoCaching();
+   
+   meter.measure(renderNoCaching);
 });
 
 NONIUS_BENCHMARK("Hello {{name}}! (cached context)", [](nonius::chronometer meter) {
+    renderNoCaching();
+    renderNoCaching();
+   
     liquidpp::Context c;
     c.set("name", "Donald Drumpf");
     meter.measure([&](){ return liquidpp::parse("Hello {{name}}!")(c);});
 })
 
 NONIUS_BENCHMARK("Hello {{name}}! (cached template)", [](nonius::chronometer meter) {
+    renderNoCaching();
+    renderNoCaching();
+   
     auto template_ = liquidpp::parse("Hello {{name}}!");
     meter.measure([&](){ 
        liquidpp::Context c;
@@ -42,6 +56,9 @@ NONIUS_BENCHMARK("Hello {{name}}! (cached template)", [](nonius::chronometer met
 })
 
 NONIUS_BENCHMARK("Hello {{name}}! (cached context and template)", [](nonius::chronometer meter) {
+   renderNoCaching();
+   renderNoCaching();
+   
     liquidpp::Context c;
     c.set("name", "Donald Drumpf");
     auto template_ = liquidpp::parse("Hello {{name}}!");
@@ -52,13 +69,27 @@ NONIUS_BENCHMARK("Hello {{name}}! (cached context and template)", [](nonius::chr
 
 int main()
 {
+   std::cerr << "Size of liquidpp::filters::Filter:         " << sizeof(liquidpp::filters::Filter) << '\n';
+   std::cerr << "Size of liquidpp::RangeDefinition:         " << sizeof(liquidpp::RangeDefinition) << '\n';
+   std::cerr << "Size of liquidpp::Value:                   " << sizeof(liquidpp::Value) << '\n';
+   std::cerr << "Size of liquidpp::Path:                    " << sizeof(liquidpp::Path) << '\n';
+   std::cerr << "Size of liquidpp::PathRef:                 " << sizeof(liquidpp::PathRef) << '\n';
+   std::cerr << "Size of liquidpp::Expression::Token:       " << sizeof(liquidpp::Expression::Token) << '\n';
+   std::cerr << "Size of liquidpp::Expression::FilterData:  " << sizeof(liquidpp::Expression::FilterData) << '\n';
+   std::cerr << "Size of liquidpp::Expression::FilterChain: " << sizeof(liquidpp::Expression::FilterChain) << '\n';
+   std::cerr << "Size of liquidpp::UnevaluatedTag:          " << sizeof(liquidpp::UnevaluatedTag) << '\n';
+   std::cerr << "Size of liquidpp::Variable:                " << sizeof(liquidpp::Variable) << '\n';
+   std::cerr << "Size of liquidpp::Node:                    " << sizeof(liquidpp::Node) << '\n';
+   std::cerr << "Size of liquidpp::Template:                " << sizeof(liquidpp::Template) << '\n';
+   std::cerr << "Size of liquidpp::Context:                 " << sizeof(liquidpp::Context) << '\n';
+   
    auto func = 
       []{
          for (int i=0; i < 50000; i++)
          {
-         liquidpp::Context c;
-         c.set("name", "Donald Drumpf");
-         volatile auto val = liquidpp::parse("Hello {{name}}!")(c);
+            auto val = renderNoCaching();
+            if (val.empty())
+               throw std::runtime_error("invalid state!");
          }
       };
    

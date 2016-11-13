@@ -6,7 +6,7 @@
 namespace liquidpp
 {
 
-using Node = boost::variant<string_view, Variable, UnevaluatedTag, std::shared_ptr<const IRenderable>>;
+using Node = boost::variant<string_view, Variable, UnevaluatedTag, std::unique_ptr<const IRenderable>>;
 
 enum class NodeType {
    String = 0,

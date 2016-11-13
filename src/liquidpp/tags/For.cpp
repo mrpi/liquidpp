@@ -207,7 +207,7 @@ template <> struct Accessor<For::LoopData> : public std::true_type {
 bool For::renderElement(Context &context, std::string &res,
                         const Value &currentVal, PathRef idxPath,
                         LoopData forLoop) const {
-  Context loopVarContext{context};
+  Context loopVarContext(&context);
   loopVarContext.set("forloop", forLoop);
 
   if (currentVal.isSimpleValue())

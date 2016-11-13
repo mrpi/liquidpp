@@ -14,9 +14,7 @@
 namespace liquidpp {
 namespace filters {
 
-struct Date : public Filter {
-  Expression::Token dateFormat;
-
+struct Date {
   static bool parse(boost::posix_time::ptime &t, const std::string &str,
                     const char *pattern) {
     std::istringstream iss(str);
@@ -29,7 +27,7 @@ struct Date : public Filter {
     return true;
   }
 
-  virtual Value operator()(Context &c, Value &&val) const override final {
+  Value operator()(Value &&val, Value&& dateFormat) const {
     if (!val.isStringViewRepresentable())
       return std::move(val);
 
@@ -55,14 +53,9 @@ struct Date : public Filter {
     }
 
     std::ostringstream oss;
-    oss << std::put_time(&t,
-                         Expression::value(c, dateFormat).toString().c_str());
+    oss << std::put_time(&t, dateFormat.toString().c_str());
 
     return oss.str();
-  }
-
-  virtual void addAttribute(string_view sv) override final {
-    dateFormat = Expression::toToken(sv);
   }
 };
 }

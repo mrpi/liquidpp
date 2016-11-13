@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Filter.hpp"
+#include "../Context.hpp"
 
 #include <boost/algorithm/string.hpp>
 
@@ -9,7 +10,7 @@ namespace liquidpp
 namespace filters
 {
 
-struct Capitalize : public Filter
+struct Capitalize
 {
    struct Upper : public std::ctype<wchar_t>
    {
@@ -19,7 +20,7 @@ struct Capitalize : public Filter
       }
    };
    
-   virtual Value operator()(Context& c, Value&& val) const override final
+   Value operator()(Context& c, Value&& val) const
    {
       if (!val.isStringViewRepresentable())
          return std::move(val);

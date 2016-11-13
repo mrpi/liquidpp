@@ -9,34 +9,28 @@ namespace filters
 {
 
 template<typename Func>
-struct NumberFilter : public Filter
+struct NumberFilter
 {
    Func func;
 
-   template<typename Func1>
-   NumberFilter(Func1&& f)
-    : func(std::forward<Func1>(f))
-   {
-   }
-
-   virtual Value operator()(Context& c, Value&& val) const override final
+   Value operator()(Value&& val)
    {
       if (val.isFloatingPoint())
-         return toValue(func(val.floatingPointValue()));
+         return func(val.floatingPointValue());
       if (val.isIntegral())
-         return toValue(func(val.integralValue()));
+         return func(val.integralValue());
 
       auto sv = *val;
       if (Expression::isInteger(sv))
       {
          auto i = boost::lexical_cast<std::intmax_t>(sv);
-         return toValue(func(i));
+         return func(i);
       }
 
       if (Expression::isFloat(sv))
       {
          auto d = boost::lexical_cast<double>(sv);
-         return toValue(func(d));
+         return func(d);
       }
 
       return std::move(val);
@@ -46,20 +40,13 @@ struct NumberFilter : public Filter
 template<typename Func>
 auto makeNumberFilter(Func&& f)
 {
-   return std::make_shared<NumberFilter<Func>>(std::forward<Func>(f));
+   return NumberFilter<Func>{std::forward<Func>(f)};
 }
 
 template<typename Func>
-struct NumberFilter1Arg : public Filter
+struct NumberFilter1Arg
 {
    Func func;
-   Expression::Token token;
-
-   template<typename Func1>
-   NumberFilter1Arg(Func1&& f)
-      : func(std::forward<Func1>(f))
-   {
-   }
 
    template<typename V, typename Arg1>
    Value apply(V v, Arg1 arg1) const
@@ -91,9 +78,8 @@ struct NumberFilter1Arg : public Filter
       return std::move(val);
    }
 
-   virtual Value operator()(Context& c, Value&& val) const override final
+   Value operator()(Value&& val, Value&& arg1) const
    {
-      auto arg1 = Expression::value(c, token);
       if (arg1.isFloatingPoint())
          return apply(std::move(val), arg1.floatingPointValue());
       if (arg1.isIntegral())
@@ -101,17 +87,12 @@ struct NumberFilter1Arg : public Filter
 
       return apply(std::move(val), *val);
    }
-
-   virtual void addAttribute(string_view sv) override final
-   {
-      token = Expression::toToken(sv);
-   }
 };
 
 template<typename Func>
 auto makeNumberFilter1Arg(Func&& f)
 {
-   return std::make_shared<NumberFilter1Arg<Func>>(std::forward<Func>(f));
+   return NumberFilter1Arg<Func>{std::forward<Func>(f)};
 }
 
 }

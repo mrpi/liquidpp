@@ -8,9 +8,9 @@ namespace liquidpp
 namespace filters
 {
 
-struct Reverse : public Filter
+struct Reverse
 {
-   virtual Value operator()(Context& c, Value&& val) const override final
+   Value operator()(Value&& val) const
    {
       if (!val.isRange())
          return std::move(val);

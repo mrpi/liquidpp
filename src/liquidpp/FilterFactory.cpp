@@ -1,18 +1,15 @@
 #include "FilterFactory.hpp"
 
+#include "filters/Filter.hpp"
+
+#include "filters/Capitalize.hpp"
 #include "filters/Escape.hpp"
-#include "filters/Size.hpp"
 #include "filters/Date.hpp"
 #include "filters/Downcase.hpp"
 #include "filters/Upcase.hpp"
-#include "filters/Capitalize.hpp"
-#include "filters/Assign.hpp"
-#include "filters/NumberFilter.hpp"
 #include "filters/Default.hpp"
-#include "filters/FloatFilter.hpp"
 #include "filters/Lstrip.hpp"
 #include "filters/NewlineToBr.hpp"
-#include "filters/Prepend.hpp"
 #include "filters/Remove.hpp"
 #include "filters/RemoveFirst.hpp"
 #include "filters/Replace.hpp"
@@ -32,94 +29,98 @@
 #include "filters/Reverse.hpp"
 #include "filters/Uniq.hpp"
 #include "filters/Map.hpp"
+#include "filters/NumberFilter.hpp"
+#include "filters/FloatFilter.hpp"
 
 namespace liquidpp
 {
 
-std::shared_ptr<filters::Filter> FilterFactory::operator()(string_view name) const
+filters::Filter FilterFactory::operator()(string_view name) const
 {
    using namespace filters;
 
    if (name == "abs")
       return makeNumberFilter( [](auto d){ return std::abs(d); } );
    if (name == "append")
-      return std::make_shared<Append>();
+      return [](Value&& val, Value&& toAppend) -> Value { return val.toString() + toAppend.toString(); };
    if (name == "capitalize")
-      return std::make_shared<Capitalize>();
+      return Capitalize{};
    if (name == "ceil")
       return makeFloatFilter( [](double d){ return std::ceil(d); } );
    if (name == "date")
-      return std::make_shared<Date>();
+      return Date{};
    if (name == "default")
-      return std::make_shared<Default>();
+      return Default{};
    if (name == "divided_by")
       return makeNumberFilter1Arg( [](auto d, auto arg){ return d / arg; } );
    if (name == "downcase")
-      return std::make_shared<Downcase>();
+      return Downcase{};
    if (name == "escape")
-      return std::make_shared<Escape>();
+      return Escape{};
    if (name == "escape_once")
-      return std::make_shared<EscapeOnce>();
+      return EscapeOnce{};
    if (name == "floor")
       return makeFloatFilter( [](double d){ return std::floor(d); } );
    if (name == "join")
-      return std::make_shared<Join>();
+      return Join{};
    if (name == "lstrip")
-      return std::make_shared<Lstrip>();
+      return Lstrip{};
    if (name == "map")
-      return std::make_shared<Map>();
+      return Map{};
    if (name == "minus")
       return makeNumberFilter1Arg( [](auto d, auto arg){ return d - arg; } );
    if (name == "modulo")
       return makeNumberFilter1Arg( [](auto d, auto arg){ return fmod(d, arg); } );
    if (name == "newline_to_br")
-      return std::make_shared<NewlineToBr>();
+      return NewlineToBr{};
    if (name == "plus")
       return makeNumberFilter1Arg( [](auto d, auto arg){ return d + arg; } );
    if (name == "prepend")
-      return std::make_shared<Prepend>();
+      return [](Value&& val, Value&& prefix) -> Value { return prefix.toString() + val.toString(); };
    if (name == "remove")
-      return std::make_shared<Remove>();
+      return Remove{};
    if (name == "remove_first")
-      return std::make_shared<RemoveFirst>();
+      return RemoveFirst{};
    if (name == "replace")
-      return std::make_shared<Replace>();
+      return Replace{};
    if (name == "replace_first")
-      return std::make_shared<ReplaceFirst>();
+      return ReplaceFirst{};
    if (name == "reverse")
-      return std::make_shared<Reverse>();
+      return Reverse{};
    if (name == "round")
-      return std::make_shared<Round>();
+      return Round{};
    if (name == "rstrip")
-      return std::make_shared<Rstrip>();
+      return Rstrip{};
    if (name == "size")
-      return std::make_shared<Size>();
+      return [](Value&& val) -> Value {
+         return val.size();
+      };
    if (name == "slice")
-      return std::make_shared<Slice>();
+      return Slice{};
    if (name == "sort")
-      return std::make_shared<Sort>();
+      return Sort{};
    if (name == "split")
-      return std::make_shared<Split>();
+      return Split{};
    if (name == "strip")
-      return std::make_shared<Strip>();
+      return Strip{};
    if (name == "strip_html")
-      return std::make_shared<StripHtml>();
+      return StripHtml{};
    if (name == "strip_newlines")
-      return std::make_shared<StripNewlines>();
+      return StripNewlines{};
    if (name == "times")
       return makeNumberFilter1Arg( [](auto d, auto arg){ return d * arg; } );
    if (name == "truncate")
-      return std::make_shared<Truncate>();
+      return Truncate{};
    if (name == "truncatewords")
-      return std::make_shared<TruncateWords>();
+      return TruncateWords{};
    if (name == "uniq")
-      return std::make_shared<Uniq>();
+      return Uniq{};
    if (name == "upcase")
-      return std::make_shared<Upcase>();
+      return Upcase{};
    if (name == "url_encode")
-      return std::make_shared<UrlEncode>();
+      return UrlEncode{};
 
-   return nullptr;
+   return filters::Filter{};
 }
 
 }

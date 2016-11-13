@@ -14,7 +14,7 @@ class RangeDefinition {
 public:
   using GaplessIndices = std::pair<size_t, size_t>;
   using AvailableIndices = SmallVector<size_t, 8>;
-  using InlineValues = SmallVector<std::string, 4>;
+  using InlineValues = SmallVector<std::string, 2>;
 
 private:
   boost::variant<GaplessIndices, AvailableIndices, InlineValues> data;
@@ -94,14 +94,34 @@ public:
   Value() = default;
 
   Value(const Value &) = default;
-
   Value(Value &&) = default;
-
-  Value &operator=(const Value &) = default;
-
-  Value &operator=(Value &&) = default;
-
-  Value(ValueTag tag) : data(tag) {}
+  
+  template<typename T>
+  Value(T val, std::enable_if_t<std::is_integral<T>::value && !std::is_same<std::decay_t<T>, bool>::value, void**> = 0)
+    : data(static_cast<std::intmax_t>(val))
+  {
+    assert(isIntegral());
+  }
+  
+  template<typename T>
+  Value(T val, std::enable_if_t<std::is_floating_point<T>::value, void**> = 0)
+    : data(static_cast<double>(val))
+  {
+    assert(isFloatingPoint());
+  }
+  
+  template<typename T>
+  Value(T val, std::enable_if_t<std::is_same<std::decay_t<T>, bool>::value, void**> = 0)
+    : data(val)
+  {
+    assert(isBool());
+  }
+  
+  Value(ValueTag val)
+    : data(val)
+  {
+     assert(isValueTag());
+  }
 
   Value(RangeDefinition rangeDef) : data(std::move(rangeDef)) {}
 
@@ -109,31 +129,19 @@ public:
 
   Value(std::string &&v) : data(std::move(v)) {}
 
-  static Value fromBool(bool b) {
-    Value res;
-    res.data = b;
-    assert(res.isBool());
-    return res;
-  }
-
-  template <typename T> static Value fromIntegral(T t) {
-    Value res;
-    res.data = static_cast<std::intmax_t>(t);
-    assert(res.isIntegral());
-    return res;
-  }
-
-  template <typename T> static Value fromFloatingPoint(T t) {
-    Value res;
-    res.data = static_cast<double>(t);
-    assert(res.isFloatingPoint());
-    return res;
-  }
+  Value &operator=(const Value &) = default;
+  Value &operator=(Value &&) = default;
 
   static Value reference(string_view sv) {
     Value res;
     res.data = sv;
     return res;
+  }
+  
+  Value asReference() const {
+    if (data.which() == 1)
+      return reference(boost::get<std::string>(data));
+    return *this;
   }
 
   bool isRange() const { return data.which() == 5; }
@@ -334,6 +342,18 @@ public:
 
   bool operator!=(ValueTag tag) const { return !(*this == tag); }
 };
+
+inline Value operator||(const Value &left, const Value& right) {
+   auto res = left;
+   res |= right;
+   return res;
+}
+
+inline Value operator&&(const Value &left, const Value& right) {
+   auto res = left;
+   res &= right;
+   return res;
+}
 
 inline std::ostream &operator<<(std::ostream &os, const Value &v) {
   if (v.isNumber())

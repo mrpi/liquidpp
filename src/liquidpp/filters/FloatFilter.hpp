@@ -13,17 +13,11 @@ namespace filters
 {
 
 template<typename Func>
-struct FloatFilter : public Filter
+struct FloatFilter
 {
    Func func;
 
-   template<typename Func1>
-   FloatFilter(Func1&& f)
-    : func(std::forward<Func1>(f))
-   {
-   }
-
-   virtual Value operator()(Context& c, Value&& val) const override final
+   Value operator()(Value&& val) const
    {
       if (val.isFloatingPoint())
          return toValue(func(val.floatingPointValue()));
@@ -44,7 +38,7 @@ struct FloatFilter : public Filter
 template<typename Func>
 auto makeFloatFilter(Func&& f)
 {
-   return std::make_shared<FloatFilter<Func>>(std::forward<Func>(f));
+   return FloatFilter<Func>{std::forward<Func>(f)};
 }
 
 }

@@ -11,6 +11,7 @@ void renderNode(Context& context, const Node& node, std::string& res);
 
 struct Template {
    BlockBody root;
+   mutable size_t mMaxResultSize{0};
 
    std::string operator()(const Context& context) const;
       

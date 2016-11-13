@@ -8,7 +8,7 @@ namespace liquidpp
 {
 
 struct FilterFactory {
-   std::shared_ptr<filters::Filter> operator()(string_view name) const;
+   filters::Filter operator()(string_view name) const;
 };
 
 }

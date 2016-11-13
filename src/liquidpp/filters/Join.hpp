@@ -8,16 +8,14 @@ namespace liquidpp
 namespace filters
 {
 
-struct Join : public Filter
+struct Join
 {
-   Expression::Token separatorToken;
-
-   virtual Value operator()(Context& c, Value&& val) const override final
+   Value operator()(Value&& val, Value&& separator) const
    {
       if (!val.isRange())
          return std::move(val);
 
-      auto sepVal = Expression::value(c, separatorToken).toString();
+      auto sepVal = separator.toString();
 
       std::string res;
 
@@ -34,14 +32,6 @@ struct Join : public Filter
       }
 
       return std::move(res);
-   }
-
-   virtual void addAttribute(string_view sv) override final
-   {
-      if (separatorToken == Expression::Token{})
-         separatorToken = Expression::toToken(sv);
-      else
-         throw Exception("Too many attributes!", sv);
    }
 };
 

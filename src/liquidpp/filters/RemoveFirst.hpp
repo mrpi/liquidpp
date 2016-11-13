@@ -10,22 +10,14 @@ namespace liquidpp
 namespace filters
 {
 
-struct RemoveFirst : public Filter
+struct RemoveFirst
 {
-   Expression::Token toRemoveToken;
-
-   virtual Value operator()(Context& c, Value&& val) const override final
+   Value operator()(Value&& val, Value&& toRemove) const
    {
       auto str = val.toString();
-      auto toRemove = Expression::value(c, toRemoveToken).toString();
 
-      boost::algorithm::replace_first(str, toRemove, "");
+      boost::algorithm::replace_first(str, toRemove.toString(), "");
       return std::move(str);
-   }
-
-   virtual void addAttribute(string_view sv) override final
-   {
-      toRemoveToken = Expression::toToken(sv);
    }
 };
 

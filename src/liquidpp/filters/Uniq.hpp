@@ -10,9 +10,9 @@ namespace liquidpp
 namespace filters
 {
 
-struct Uniq : public Filter
+struct Uniq
 {
-   virtual Value operator()(Context& c, Value&& val) const override final
+   Value operator()(Value&& val) const
    {
       if (!val.isRange())
          return std::move(val);

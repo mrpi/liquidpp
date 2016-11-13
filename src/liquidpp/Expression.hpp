@@ -26,7 +26,18 @@ struct Expression {
 
    using RawTokens = SmallVector<string_view, 4>;
    using Token = boost::variant<Operator, Value, Path>;
-   using FilterChain = SmallVector<std::shared_ptr<filters::Filter>, 2>;
+   
+   struct FilterData
+   {
+      filters::Filter function{};
+      SmallVector<Token, 1> args;
+      
+      explicit operator bool() const
+      {
+         return !!function;
+      }
+   };
+   using FilterChain = SmallVector<FilterData, 1>;
 
    static bool matches(Context& c, const Value& left, Operator operator_, const Value& right, const Token& leftToken);
    static RawTokens splitTokens(string_view sequence);
@@ -39,7 +50,15 @@ struct Expression {
    static bool isInteger(string_view sv);
    static bool isFloat(string_view sv);
    static bool isWhitespace(char c);
-   static bool isAsciiAlpha(char c);
+   static inline bool isAsciiAlpha(char c)
+   {
+      if (c >= 'a' && c <= 'z')
+         return true;
+      if (c >= 'A' && c <= 'Z')
+         return true;
+      return false;
+   }
+   
    static bool isDigit(char c);
 
    Value operator()(Context& c) const;
@@ -49,7 +68,7 @@ struct Expression {
    {
       FilterChain filterChain;
 
-      std::shared_ptr<filters::Filter> currentFilter;
+      FilterData currentFilter;
       bool newFilter = false;
       auto tokenCount = tokens.size();
       size_t attribIdx = 0;
@@ -62,13 +81,16 @@ struct Expression {
                throw Exception("Unexpected second pipe character!", token);
             newFilter = true;
             if (currentFilter)
+            {
                filterChain.push_back(std::move(currentFilter));
+               currentFilter = FilterData{};
+            }
          }
          else if (newFilter)
          {
-            currentFilter = filterFac(token);
+            currentFilter.function = filterFac(token);
             attribIdx = 0;
-            if (currentFilter == nullptr)
+            if (!currentFilter)
                throw Exception("Unknown filter!", token);
             newFilter = false;
          }
@@ -77,7 +99,7 @@ struct Expression {
             if (currentFilter)
             {
                if (attribIdx++ % 2)
-                  currentFilter->addAttribute(token);
+                  currentFilter.args.push_back(toToken(token));
                else
                {
                   if (attribIdx == 1) {

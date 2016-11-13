@@ -47,17 +47,22 @@ namespace liquidpp
          c.setLink("article", "blog.articles[0]");
       }
 
-      auto initLiquidContext()
+      bool initLiquidContext(liquidpp::Context& c)
       {
-         liquidpp::Context c;
          c.setAnonymous(std::ref(rapidJsonExample()));
          setupDefaults(c);
-         return c;
+         return true;
       }
 
       auto& liquidContext()
       {
-         static liquidpp::Context c = initLiquidContext();
+         static liquidpp::Context c;
+         static bool initialized = false;
+         if (!initialized)
+         {
+            initLiquidContext(c);
+            initialized = true;
+         }
          return c;
       }
 
