@@ -1,26 +1,17 @@
 sudo: false
 
-language: generic
+language: c++
 
-cache:
-  apt: true
+#cache:
+#  apt: true
 
 addons:
 matrix:
   include:
-    - os: linux
-      env: COMPILER_NAME=gcc CXX=g++-6 CC=gcc-6
-      addons:
-        apt:
-          packages:
-            - gcc-6
-            - g++-6
-            - libboost1.55-dev
-            - libboost-locale1.55-dev
-            - rapidjson-dev
-          sources:
-            - boost-latest
-            - ubuntu-toolchain-r-test
+    # Xcode 8
+    - os: osx
+      osx_image: xcode8
+      #env: UNIT_TESTS=true BOOST_VERSION=default
 
 script:
     - mkdir _builds
