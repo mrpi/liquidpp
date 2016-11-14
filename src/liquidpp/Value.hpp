@@ -230,7 +230,7 @@ public:
 
   std::string toString() const {
     if (isIntegral())
-      return boost::lexical_cast<std::string>(boost::get<std::int64_t>(data));
+      return boost::lexical_cast<std::string>(boost::get<std::intmax_t>(data));
     else if (isFloatingPoint()) {
       std::ostringstream oss;
       oss << std::setprecision(16) << boost::get<double>(data);

@@ -274,7 +274,7 @@ Expression::Token Expression::toToken(string_view tokenStr) {
   case '8':
   case '9':
     if (isInteger(tokenStr))
-      return Value{lex_cast<std::int64_t>(tokenStr)};
+      return Value{lex_cast<std::intmax_t>(tokenStr)};
     else if (isFloat(tokenStr))
       return Value{lex_cast<double>(tokenStr)};
     else
