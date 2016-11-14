@@ -5,16 +5,16 @@
 #include <unordered_map>
 #include <utility>
 
+#include <boost/container/flat_map.hpp>
 #include <boost/lexical_cast.hpp>
 #include <boost/optional.hpp>
 #include <boost/variant/get.hpp>
 #include <boost/variant/variant.hpp>
-#include <boost/container/flat_map.hpp>
 
 #include "config.h"
 
-#include "Key.hpp"
 #include "Accessor.hpp"
+#include "Key.hpp"
 
 #include "accessors/Accessors.hpp"
 
@@ -27,11 +27,23 @@ private:
   Context *mDocumentScopeContext{nullptr};
   using MapValue = boost::variant<Value, ValueGetter>;
 
-  using StorageAllocator = hhinnant::short_alloc<std::pair<const std::string, MapValue>, 256>;
-  using StorageT = std::map<std::string, MapValue, std::less<void>, StorageAllocator>;
-  
+  using MapType = std::pair<const std::string, MapValue>;
+#ifdef _MSC_VER
+  using StorageAllocator = std::allocator<MapType>;
+#else
+  using StorageAllocator =
+     hhinnant::short_alloc<MapType, 256>;
   StorageAllocator::arena_type mArena;
-  StorageT mValues{StorageAllocator{mArena}};
+#endif
+
+  using StorageT =
+      std::map<std::string, MapValue, std::less<void>, StorageAllocator>;
+
+#ifdef _MSC_VER
+  StorageT mValues;
+#else
+  StorageT mValues{ StorageAllocator(mArena) };
+#endif
   ValueGetter mAnonymous;
   boost::optional<std::locale> mLocale{std::locale()};
 
@@ -43,8 +55,7 @@ public:
   Context() = default;
 
   explicit Context(const Context *parent)
-      : mParent(parent), mDocumentScopeContext(this),
-        mLocale(boost::none),
+      : mParent(parent), mDocumentScopeContext(this), mLocale(boost::none),
         mMaxOutputSize(parent->mMaxOutputSize),
         mMinOutputPer1024Loops{parent->mMinOutputPer1024Loops} {
     assert(mParent->mDocumentScopeContext == nullptr);
@@ -52,26 +63,27 @@ public:
 
   explicit Context(Context *parent)
       : mParent(parent), mDocumentScopeContext(mParent->mDocumentScopeContext),
-        mLocale(boost::none),
-        mMaxOutputSize(parent->mMaxOutputSize),
+        mLocale(boost::none), mMaxOutputSize(parent->mMaxOutputSize),
         mMinOutputPer1024Loops{parent->mMinOutputPer1024Loops} {
     assert(mDocumentScopeContext != nullptr);
   }
 
   Context(std::initializer_list<StorageT::value_type> entries)
-      : mValues(entries, StorageAllocator{mArena}) {}
-      
-  const std::locale& locale() const
-  {
-     if (mLocale)
-        return *mLocale;
-     return mParent->locale();
+      : 
+#ifdef _MSC_VER
+     mValues(entries)
+#else
+     mValues(entries, StorageAllocator{ mArena })
+#endif
+  {}
+
+  const std::locale &locale() const {
+    if (mLocale)
+      return *mLocale;
+    return mParent->locale();
   }
-      
-  void setLocale(const std::locale& loc)
-  {
-     mLocale = loc;
-  }
+
+  void setLocale(const std::locale &loc) { mLocale = loc; }
 
   Context &documentScopeContext() {
     assert(mDocumentScopeContext);
@@ -154,8 +166,8 @@ public:
     }
 
     if (mParent == nullptr)
-       return ValueTag::Null;
-      
+      return ValueTag::Null;
+
     return mParent->get(path);
   }
 
@@ -168,18 +180,15 @@ public:
            std::enable_if_t<!hasAccessor<T>, void **> = 0) {
     setLiquidValue(std::move(name), toValue(value));
   }
-  
-private:
-   template<typename T>
-   static inline auto buildAccessorFunction(T&& value)
-   {
-      return [val = std::forward<T>(value)](PathRef path) {
-        return Accessor<std::decay_t<T>>::get(val, path);
-      };
-   }
-   
-public:
 
+private:
+  template <typename T> static inline auto buildAccessorFunction(T &&value) {
+    return [val = std::forward<T>(value)](PathRef path) {
+      return Accessor<std::decay_t<T>>::get(val, path);
+    };
+  }
+
+public:
   template <typename T>
   void set(std::string name, T &&value,
            std::enable_if_t<hasAccessor<std::decay_t<T>>, void **> = 0) {
