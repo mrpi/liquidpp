@@ -28,17 +28,23 @@ struct Filter {
 
   Filter() = default;
 
-  Filter(Func0Arg func) : mFunction(std::move(func)) {}
+  template<typename T>
+  Filter(T&& func, std::enable_if_t<std::is_convertible<T, Func0Arg>::value, void**> = nullptr) : mFunction(std::move(func)) {}
 
-  Filter(Func1Arg func) : mFunction(std::move(func)) {}
+  template<typename T>
+  Filter(T&& func, std::enable_if_t<std::is_convertible<T, Func1Arg>::value, void**> = nullptr) : mFunction(std::move(func)) {}
 
-  Filter(Func2Arg func) : mFunction(std::move(func)) {}
+  template<typename T>
+  Filter(T&& func, std::enable_if_t<std::is_convertible<T, Func2Arg>::value, void**> = nullptr) : mFunction(std::move(func)) {}
 
-  Filter(FuncContext0Arg func) : mFunction(std::move(func)) {}
+  template<typename T>
+  Filter(T&& func, std::enable_if_t<std::is_convertible<T, FuncContext0Arg>::value, void**> = nullptr) : mFunction(std::move(func)) {}
 
-  Filter(FuncContext1Arg func) : mFunction(std::move(func)) {}
+  template<typename T>
+  Filter(T&& func, std::enable_if_t<std::is_convertible<T, FuncContext1Arg>::value, void**> = nullptr) : mFunction(std::move(func)) {}
 
-  Filter(FuncContext2Arg func) : mFunction(std::move(func)) {}
+  template<typename T>
+  Filter(T&& func, std::enable_if_t<std::is_convertible<T, FuncContext2Arg>::value, void**> = nullptr) : mFunction(std::move(func)) {}
 
   static void assureSize(FilterArgs &args, size_t len) {
     enforce(args.size() <= len, "Too many arguments for this filter!");
