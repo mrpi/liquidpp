@@ -9,6 +9,8 @@ For::For(Tag &&tag) : Block(std::move(tag)) {
     throw Exception("Not enough parameters in 'for' tag!", value);
 
   loopVariable = tokens[0];
+  Expression::assureIsSingleKeyPath(loopVariable);
+  
   if (tokens[1] != "in")
     throw Exception("Second token in 'for' tag has to be the 'in' keyword!",
                     tokens[1]);

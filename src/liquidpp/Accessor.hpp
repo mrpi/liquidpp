@@ -33,7 +33,8 @@ struct Accessor<char*> : public Accessor<const char*> {};
 template <typename T>
 struct Accessor<const T> : public Accessor<T> {};
 
-template <typename T> struct Accessor<T &> : public Accessor<T> {};
+template <typename T> 
+struct Accessor<T &> : public Accessor<T> {};
 
 template <typename T>
 struct Accessor<const T&> : public Accessor<T> {};
@@ -47,7 +48,8 @@ inline Value toValue(std::string v) { return Value(std::move(v)); }
 
 inline Value toValue(const char *v) { return Value(std::string{v}); }
 
-template <size_t Len> Value toValue(const char (&v)[Len]) {
+template <size_t Len> 
+Value toValue(const char (&v)[Len]) {
   return Value(std::string{v});
 }
 

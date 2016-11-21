@@ -326,6 +326,16 @@ Expression Expression::fromSequence(string_view sequence) {
   return res;
 }
 
+void Expression::assureIsSingleKeyPath(string_view rawToken)
+{
+  auto loopVarToken = Expression::toToken(rawToken);
+  if (loopVarToken.which() != 2)
+    throw Exception("Loop variable is not a path!", rawToken);
+  auto& path = boost::get<Path>(loopVarToken);
+  if (path.size() != 1)
+    throw Exception("Loop variable has to be a single key (no dots or array indizes allowed)!", rawToken);
+}
+
 std::tuple<Value, Path> Expression::value(Context &c,
                                           const RangeDefinition &range,
                                           size_t i, PathRef basePath) {

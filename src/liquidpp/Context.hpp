@@ -64,7 +64,8 @@ public:
   explicit Context(Context *parent)
       : mParent(parent), mDocumentScopeContext(mParent->mDocumentScopeContext),
         mLocale(boost::none), mMaxOutputSize(parent->mMaxOutputSize),
-        mMinOutputPer1024Loops{parent->mMinOutputPer1024Loops} {
+        mMinOutputPer1024Loops{parent->mMinOutputPer1024Loops},
+        mRecursiveDepth{parent->mRecursiveDepth} {
     assert(mDocumentScopeContext != nullptr);
   }
 
@@ -172,7 +173,7 @@ public:
   }
 
   void setLiquidValue(std::string name, Value value) {
-    mValues[name] = std::move(value);
+    mValues[std::move(name)] = std::move(value);
   }
 
   template <typename T>
@@ -182,7 +183,8 @@ public:
   }
 
 private:
-  template <typename T> static inline auto buildAccessorFunction(T &&value) {
+  template <typename T> 
+  static inline auto buildAccessorFunction(T &&value) {
     return [val = std::forward<T>(value)](PathRef path) {
       return Accessor<std::decay_t<T>>::get(val, path);
     };
@@ -192,12 +194,12 @@ public:
   template <typename T>
   void set(std::string name, T &&value,
            std::enable_if_t<hasAccessor<std::decay_t<T>>, void **> = 0) {
-    mValues[name] = buildAccessorFunction(std::forward<T>(value));
+    mValues[std::move(name)] = buildAccessorFunction(std::forward<T>(value));
   }
 
   void setLink(std::string name, string_view referencedPath) {
     auto p = toPath(referencedPath);
-    setLink(name, p);
+    setLink(std::move(name), p);
   }
 
   void setLink(std::string name, PathRef referencedPath) {
@@ -207,7 +209,7 @@ public:
       auto p = basePath + subPath;
       return get(p);
     };
-    mValues[name] = std::move(callRef);
+    mValues[std::move(name)] = std::move(callRef);
   }
 
   template <typename T> void setAnonymous(T &&value) {

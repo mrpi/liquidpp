@@ -65,6 +65,20 @@ NONIUS_BENCHMARK("Hello {{name}}! (cached context and template)", [](nonius::chr
     meter.measure([&](){ return template_(c); });
 })
 
+NONIUS_BENCHMARK("Render date now", []() {
+   liquidpp::Context c;
+   auto template_ = liquidpp::parse("{{ 'now' | date: '%Y-%m-%d %H:%M:%s' }}!");
+   return template_(c);
+})
+
+#ifdef LIQUIDPP_OLD_DATE_IMPL
+NONIUS_BENCHMARK("Render date_old_impl now", []() {
+   liquidpp::Context c;
+   auto template_ = liquidpp::parse("{{ 'now' | date_old_impl: '%Y-%m-%d %H:%M:%s' }}!");
+   return template_(c);
+})
+#endif
+
 #else
 
 int main()

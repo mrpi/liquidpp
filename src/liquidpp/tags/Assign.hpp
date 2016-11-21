@@ -25,6 +25,7 @@ struct Assign : public Tag {
          throw Exception("Malformed assign statement (assignment operator '=' required)!", value);
 
       variableName = tokens[0];
+      Expression::assureIsSingleKeyPath(variableName);
       assignment = Expression::toToken(tokens[2]);
       filterChain = Expression::toFilterChain(filterFac, tokens, 3);
    }

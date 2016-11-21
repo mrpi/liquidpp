@@ -49,6 +49,10 @@ filters::Filter FilterFactory::operator()(string_view name) const
       return makeFloatFilter( [](double d){ return std::ceil(d); } );
    if (name == "date")
       return Date{};
+#ifdef LIQUIDPP_OLD_DATE_IMPL
+   if (name == "date_old_impl")
+      return DateOldImpl{};
+#endif
    if (name == "default")
       return Default{};
    if (name == "divided_by")
