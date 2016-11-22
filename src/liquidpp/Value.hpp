@@ -196,6 +196,10 @@ public:
 
   bool isNumber() const { return isIntegral() || isFloatingPoint(); }
 
+  bool isStringView() const {
+    return data.which() == 0;
+  }
+
   bool isStringType() const {
     if (data.which() == 0 || data.which() == 1)
       return true;

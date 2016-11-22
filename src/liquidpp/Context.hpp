@@ -26,6 +26,7 @@ private:
   const Context *mParent{nullptr};
   Context *mDocumentScopeContext{nullptr};
   using MapValue = boost::variant<Value, ValueGetter>;
+  using MapValuePtr = boost::variant<const Value*, const ValueGetter*>;
 
   using MapType = std::pair<const std::string, MapValue>;
 #ifdef _MSC_VER
@@ -107,11 +108,12 @@ public:
   }
 
 private:
-  Value getFromValues(StorageT::const_iterator itr, PathRef path) const {
-    auto key = popKey(path);
-
-    if (itr->second.which() == 1) {
-      auto &valueGetter = boost::get<ValueGetter>(itr->second);
+  Value getFromValues(const MapValuePtr& ptr, PathRef path) const {
+    if (ptr == MapValuePtr{})
+       return Value{};
+     
+    if (ptr.which() == 1) {
+      auto &valueGetter = *boost::get<const ValueGetter*>(ptr);
       auto res = valueGetter(path);
       if (res == ValueTag::SubValue) {
         auto lastKey = popLastKey(path);
@@ -138,38 +140,55 @@ private:
       return res;
     }
 
-    if (key.isIndex())
-      return ValueTag::SubValue;
-
+    auto& val = *boost::get<const Value*>(ptr);
     if (!path.empty()) {
       if (path.size() == 1 && path[0] == "size")
-        return toValue(boost::get<Value>(itr->second).toString().size());
+        return toValue(val.toString().size());
 
       return ValueTag::SubValue;
     }
 
-    return boost::get<Value>(itr->second).asReference();
+    return val.asReference();
   }
-
-public:
-  Value get(const PathRef path) const {
+  
+  inline MapValuePtr getPtr(PathRef& path) const
+  {
     if (path.empty())
       throw std::runtime_error("Can't handle empty path!");
 
     auto itr = mValues.find(path[0].name());
     if (itr != mValues.end())
-      return getFromValues(itr, path);
+    {
+       popKey(path);
+        
+       switch(itr->second.which())
+       {
+       case 0:
+          return &boost::get<Value>(itr->second);
+       case 1:
+          return &boost::get<ValueGetter>(itr->second);
+       default:
+          assert(false);
+       }
+    }
 
     if (mAnonymous) {
       auto res = mAnonymous(path);
       if (res != ValueTag::Null)
-        return res;
+        return &mAnonymous;
     }
 
     if (mParent == nullptr)
-      return ValueTag::Null;
+      return MapValuePtr{};
 
-    return mParent->get(path);
+    return mParent->getPtr(path);
+  }
+
+public:
+  Value get(PathRef path) const {
+    auto ptr = getPtr(path);
+
+    return getFromValues(ptr, path);
   }
 
   void setLiquidValue(std::string name, Value value) {
@@ -203,13 +222,35 @@ public:
   }
 
   void setLink(std::string name, PathRef referencedPath) {
-    auto callRef =
-        [ this, basePath = Path(referencedPath.begin(), referencedPath.end()) ](
-            PathRef subPath) {
-      auto p = basePath + subPath;
-      return get(p);
-    };
-    mValues[std::move(name)] = std::move(callRef);
+    if (referencedPath.empty())
+      throw std::runtime_error("Can't handle empty path on set of link!");
+
+    auto basePtr = getPtr(referencedPath);
+    auto basePath = Path(referencedPath.begin(), referencedPath.end());
+    switch(basePtr.which())
+    {
+       case 0:
+       {
+          auto& valPtr = boost::get<const Value*>(basePtr);
+          if (valPtr == nullptr)
+             mValues[std::move(name)] = Value{};
+          else
+             mValues[std::move(name)] =
+               [this, val = *valPtr, basePath](PathRef subPath) {
+                  auto p = basePath + subPath;
+                  return getFromValues(&val, p);
+               };
+          break;
+       }
+       case 1:
+       {
+         mValues[std::move(name)] =
+            [this, valGetter = *boost::get<const ValueGetter*>(basePtr), basePath](PathRef subPath) {
+               auto p = basePath + subPath;
+               return getFromValues(&valGetter, p);
+            };
+       }
+    }
   }
 
   template <typename T> void setAnonymous(T &&value) {

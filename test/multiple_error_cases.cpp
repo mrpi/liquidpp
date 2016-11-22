@@ -70,3 +70,34 @@ TEST_CASE("very long running for loop")
       REQUIRE(e.position().column == 4);
    }
 }
+
+TEST_CASE("assign to for loop range variable")
+{
+   liquidpp::Context c;
+   
+   auto templ = liquidpp::parse(R"(
+{%- assign handles = "cake, cookie, cake, cookie, cake, cookie, cake, cookie" | remove: "," -%}
+{%- for handle in handles -%}
+   {%- assign handles = "cookie, cake, cookie, cake, cookie, cake, cookie, cake" | remove: "," -%}
+   {{- handle -}}
+{%- endfor -%}
+)");
+   
+   REQUIRE(templ(c) == "cake cookie cake cookie cake cookie cake cookie");
+}
+
+TEST_CASE("assign to array of for loop")
+{
+   liquidpp::Context c;
+   
+   auto templ = liquidpp::parse(R"(
+{%- assign handles = "cake, cookie, cake, cookie, cake, cookie, cake, cookie" | split: "," -%}
+{%- for handle in handles -%}
+   {%- assign handles = "cookie, cake, cookie, cake, cookie, cake, cookie, cake" | remove: "," -%}
+   {{- handle -}}
+{%- endfor -%}
+)");
+   
+   // This result may not be the required/expected outcome but atleat we should not crash here
+   REQUIRE(templ(c) == R"(cake)");
+}
