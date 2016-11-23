@@ -84,7 +84,34 @@ struct BlockItem
 {
    BlockBody* body;
    boost::optional<std::string> endTagName;
+   string_view openingTagName;
 };
+
+inline void ensureValidTagName(string_view tagName)
+{
+   assert(!tagName.empty());
+   
+   if (!Expression::isAsciiAlpha(tagName[0]))
+      throw Exception("Tag name has to start with a alpha character!", tagName);
+   
+   for (auto& c : tagName)
+   {
+      if (Expression::isAsciiAlpha(c))
+         continue;
+
+      if (Expression::isDigit(c))
+         continue;
+      
+      switch(c)
+      {
+         case '_':
+         case '-':
+            break;
+         default:
+            throw Exception("Invalid character in tag name!", {&c, 1});
+      }
+   }
+}
 
 template<typename TagFactoryT, typename FilterFactoryT>
 void fastParser(string_view content, BlockBody& rootBlock)
@@ -145,12 +172,15 @@ void fastParser(string_view content, BlockBody& rootBlock)
                   {
                      std::string endTagName = "end";
                      endTagName.append(subBlock->name.data(), subBlock->name.size());
-                     stack.push_back({&subBlock->body, std::move(endTagName)});
+                     stack.push_back({&subBlock->body, std::move(endTagName), subBlock->name});
                      block = &stack.back();
                   }
                }
                else
+               {
+                  ensureValidTagName(rawTag.name);
                   block->body->nodeList.push_back(std::move(rawTag));
+               }
             }
             break;
          }
@@ -179,6 +209,9 @@ void fastParser(string_view content, BlockBody& rootBlock)
          }
       }
    }
+   
+   if (stack.size() > 1)
+      throw Exception("Closing tag is missing for this block tag! Please add '{% " + *stack.back().endTagName + " %}' to the template.", stack.back().openingTagName);
 }
 }
 

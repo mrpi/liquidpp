@@ -101,3 +101,34 @@ TEST_CASE("assign to array of for loop")
    // This result may not be the required/expected outcome but atleat we should not crash here
    REQUIRE(templ(c) == R"(cake)");
 }
+
+TEST_CASE("Unterminated block tag should fail on parsing")
+{
+   auto templStr = "{% for id in ids %}";
+   try
+   {
+      liquidpp::parse(templStr);
+      FAIL("Parsing did not throw exceptoin");
+   }
+   catch(liquidpp::Exception& e)
+   {
+      REQUIRE(e.errorPart() == "for");
+      REQUIRE(e.errorPart().data() == templStr + 3);
+   }
+}
+
+TEST_CASE("Invalid character at start of tag")
+{
+   auto templStr = "{%/ assign = 'x' %}";
+   
+   try
+   {
+      liquidpp::parse(templStr);
+      FAIL("Parsing did not throw exceptoin");
+   }
+   catch(liquidpp::Exception& e)
+   {
+      REQUIRE(e.errorPart() == "/");
+      REQUIRE(e.errorPart().data() == templStr + 2);
+   }
+}
