@@ -1,5 +1,5 @@
 # liquidpp
-C++14 version of the [Liquid Markup Language](https://shopify.github.io/liquid/)
+C++ version of the [Liquid Markup Language](https://shopify.github.io/liquid/). It is build on "Modern C++" techniques (C++14).
 
 Usage
 -----
