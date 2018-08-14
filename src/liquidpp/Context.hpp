@@ -183,12 +183,42 @@ private:
 
     return mParent->getPtr(path);
   }
+  
+  static bool hasIndexVariables(PathRef path)
+  {
+     for (auto& p : path)
+     {
+        if (p.isIndexVariable())
+           return true;
+     }
+     
+     return false;
+  }
 
-public:
-  Value get(PathRef path) const {
+  Value getImpl(PathRef path) const {
+    assert(!hasIndexVariables(path));
     auto ptr = getPtr(path);
 
     return getFromValues(ptr, path);
+  }
+
+public:
+  Value get(PathRef path) const {
+     if (hasIndexVariables(path))
+     {
+        Path pathCopy(path.begin(), path.end());
+        for (auto& p : pathCopy)
+        {
+           if (!p.isIndexVariable())
+              continue;
+           
+           auto idxPath = toPath(p.indexVariable().name);           
+           p = Key{lex_cast<size_t>(get(idxPath).toString())};
+        }
+        return getImpl(pathCopy);
+     }
+     
+     return getImpl(path);
   }
 
   void setLiquidValue(std::string name, Value value) {

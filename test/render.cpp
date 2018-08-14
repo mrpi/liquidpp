@@ -74,9 +74,23 @@ TEST_CASE("render std::vector<std::string>", TestTags) {
   c.set("vec", vec);
 
   auto render = [&](auto &&str) { return liquidpp::parse(str)(c); };
-  REQUIRE("#0: value a" == render("#0: {{vec[0]}}"));
-  REQUIRE("#1: value b" == render("#1: {{ vec[1] }}"));
-  REQUIRE("#2: " == render("#2: {{  vec[2]  }}"));
+  SECTION("with numeric array index")
+  {
+    REQUIRE("#0: value a" == render("#0: {{vec[0]}}"));
+    REQUIRE("#1: value b" == render("#1: {{ vec[1] }}"));
+    REQUIRE("#2: " == render("#2: {{  vec[2]  }}"));
+  }
+
+  SECTION("with variable as array index")
+  {
+    int idx = 0;
+    c.set("i", std::ref(idx));
+    REQUIRE("#0: value a" == render("#0: {{vec[i]}}"));
+    idx++;
+    REQUIRE("#1: value b" == render("#1: {{ vec[i] }}"));
+    idx++;
+    REQUIRE("#2: " == render("#2: {{  vec[i]  }}"));
+  }
 }
 
 TEST_CASE("render std::vector<int>", TestTags) {
