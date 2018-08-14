@@ -1,8 +1,10 @@
 cmake_minimum_required(VERSION 2.8)
 project(liquidpp)
 
-include(${CMAKE_BINARY_DIR}/conanbuildinfo.cmake)
-conan_basic_setup()
+if(EXISTS "${CMAKE_BINARY_DIR}/conanbuildinfo.cmake")
+  include(${CMAKE_BINARY_DIR}/conanbuildinfo.cmake)
+  conan_basic_setup()
+endif()
 
 INCLUDE(CheckIncludeFileCXX)
 

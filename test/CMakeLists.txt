@@ -4,7 +4,7 @@ include_directories (${liquidpp_SOURCE_DIR}/src
                      )
 
 include_directories(${CMAKE_CURRENT_BINARY_DIR})
-file(DOWNLOAD https://raw.githubusercontent.com/philsquared/Catch/master/single_include/catch.hpp ${CMAKE_CURRENT_BINARY_DIR}/catch.hpp)
+file(DOWNLOAD https://github.com/catchorg/Catch2/releases/download/v2.3.0/catch.hpp ${CMAKE_CURRENT_BINARY_DIR}/catch.hpp)
 
 if (PROTOBUF_FOUND)
    include_directories(${PROTOBUF_INCLUDE_DIRS})
