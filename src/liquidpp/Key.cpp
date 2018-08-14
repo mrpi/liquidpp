@@ -6,6 +6,30 @@
 namespace liquidpp
 {
 
+template<char OpeningBracket, char ClosingBracket>
+inline size_t matchingBracket(const string_view path)
+{
+   size_t openCnt = 1;
+   assert(path.empty() || path[0] == OpeningBracket);   
+   
+   for (size_t i=1; i < path.size(); i++)
+   {
+      switch(path[i])
+      {
+         case OpeningBracket:
+            openCnt++;
+            break;
+         case ClosingBracket:
+            openCnt--;
+            if (openCnt == 0)
+               return i;
+            break;            
+      }
+   }
+   
+   return std::string::npos;
+}
+   
 Key popKey(string_view &path) {
   if (path.empty())
     return Key{};
@@ -26,11 +50,16 @@ Key popKey(string_view &path) {
     }
     else
     {
-       idxEnd = path.find(']');
+       idxEnd = matchingBracket<'[', ']'>(path);
        if (idxEnd == std::string::npos)
           throw Exception("Unterminated array index!", path.substr(0, 1));
-       auto numPart = string_view{path.data() + 1, idxEnd - 1};
-       res = Key{lex_cast<size_t>(numPart, "Array index is not an integral value!")};
+       if (idxEnd < 1)
+          throw Exception("Empty array index!", path.substr(0, 1));
+       auto idxPart = string_view{path.data() + 1, idxEnd - 1};
+       if (idxPart[0] >= '0' && idxPart[0] <= '9')
+          res = Key{lex_cast<size_t>(idxPart, "Array index is not a valid integral value!")};
+       else
+          res = Key{IndexVariable{idxPart}};
     }
      
     if (path.size() <= idxEnd+1)

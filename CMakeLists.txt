@@ -12,7 +12,7 @@ find_package( Boost REQUIRED )
 #find_package( Boost REQUIRED COMPONENTS locale system )
 include_directories(${Boost_INCLUDE_DIRS}) 
 
-find_package(Protobuf)
+#find_package(Protobuf)
 if (PROTOBUF_FOUND)
    set(LIQUIDPP_HAVE_PROTOBUF PROTOBUF_FOUND)
 endif (PROTOBUF_FOUND)

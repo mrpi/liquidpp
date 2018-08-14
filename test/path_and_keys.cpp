@@ -19,6 +19,20 @@ TEST_CASE("popKey with array index") {
   REQUIRE_FALSE(liquidpp::popKey(path));
 }
 
+TEST_CASE("popKey with variable as array index") {
+  liquidpp::string_view path = "vec[i]";
+  auto key = liquidpp::popKey(path);
+  REQUIRE(key);
+  REQUIRE(key == "vec"_sv);
+
+  auto key2 = liquidpp::popKey(path);
+  REQUIRE(key2.isIndexVariable());
+  REQUIRE(key2.indexVariable().name == "i"_sv);
+
+  REQUIRE(path == "");
+  REQUIRE_FALSE(liquidpp::popKey(path));
+}
+
 TEST_CASE("popKey with long path") {
   liquidpp::string_view path = "asdftest[123].a[1].x";
   auto key = liquidpp::popKey(path);
