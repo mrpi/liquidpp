@@ -27,7 +27,9 @@ TEST_CASE("popKey with variable as array index") {
 
   auto key2 = liquidpp::popKey(path);
   REQUIRE(key2.isIndexVariable());
-  REQUIRE(key2.indexVariable().name == "i"_sv);
+  REQUIRE(key2.indexVariable().size() == 1);
+  REQUIRE(key2.indexVariable()[0].isName());
+  REQUIRE(key2.indexVariable()[0].name()== "i"_sv);
 
   REQUIRE(path == "");
   REQUIRE_FALSE(liquidpp::popKey(path));

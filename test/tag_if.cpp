@@ -94,37 +94,37 @@ TEST_CASE("render if logic operator")
    c.set("var", "x");
    c.set("range", v);
 
-   SECTION("and without comarsion")
+   SECTION("and without comparsion")
    {
       auto rendered = liquidpp::render("{% if var and range %}matching{%endif%}", c);
       REQUIRE(rendered == "matching");
    }
 
-   SECTION("and without comarsion - first nil")
+   SECTION("and without comparsion - first nil")
    {
       auto rendered = liquidpp::render("{% if var1 and var %}matching{%endif%}", c);
       REQUIRE(rendered == "");
    }
 
-   SECTION("and without comarsion - second nil")
+   SECTION("and without comparsion - second nil")
    {
       auto rendered = liquidpp::render("{% if var and var1 %}matching{%endif%}", c);
       REQUIRE(rendered == "");
    }
 
-   SECTION("and with comarsion")
+   SECTION("and with comparsion")
    {
       auto rendered = liquidpp::render("{% if var == 'x' and range[0] == 1 %}matching{%endif%}", c);
       REQUIRE(rendered == "matching");
    }
 
-   SECTION("and with comarsion - second not matching")
+   SECTION("and with comparsion - second not matching")
    {
       auto rendered = liquidpp::render("{% if var == 'x' and range[0] == 314 %}matching{%endif%}", c);
       REQUIRE(rendered == "");
    }
 
-   SECTION("and with comarsion - first not matching")
+   SECTION("and with comparsion - first not matching")
    {
       auto rendered = liquidpp::render("{% if range[0] == 314 and var == 'x' %}matching{%endif%}", c);
       REQUIRE(rendered == "");

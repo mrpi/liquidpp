@@ -212,8 +212,8 @@ public:
            if (!p.isIndexVariable())
               continue;
            
-           auto idxPath = toPath(p.indexVariable().name);           
-           p = Key{lex_cast<size_t>(get(idxPath).toString())};
+           auto idxVar = get(p.indexVariable()).toString();
+           p = Key{lex_cast<size_t>(idxVar)};
         }
         return getImpl(pathCopy);
      }

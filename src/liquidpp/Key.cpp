@@ -56,10 +56,11 @@ Key popKey(string_view &path) {
        if (idxEnd < 1)
           throw Exception("Empty array index!", path.substr(0, 1));
        auto idxPart = string_view{path.data() + 1, idxEnd - 1};
+       
        if (idxPart[0] >= '0' && idxPart[0] <= '9')
           res = Key{lex_cast<size_t>(idxPart, "Array index is not a valid integral value!")};
        else
-          res = Key{IndexVariable{idxPart}};
+          res = Key{toPath(idxPart)};
     }
      
     if (path.size() <= idxEnd+1)

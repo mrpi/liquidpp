@@ -14,24 +14,9 @@ namespace liquidpp {
 using OptIndex = boost::optional<size_t>;
 using KeyHolder = SmallVector<char, 64>;
 
-struct IndexVariable
-{
-   string_view name;
-};
-
-inline bool operator==(IndexVariable left, IndexVariable right)
-{
-   return left.name == right.name;
-}
-
-inline bool operator<(IndexVariable left, IndexVariable right)
-{
-   return left.name < right.name;
-}
-
 struct Key {
 private:
-  boost::variant<string_view, size_t, IndexVariable> mData;
+  boost::variant<string_view, size_t, std::vector<Key>> mData;
 
 public:
   explicit Key() {}
@@ -40,7 +25,7 @@ public:
 
   explicit Key(size_t idx) : mData(idx) {}
 
-  explicit Key(IndexVariable idxStr) : mData(idxStr) {}
+  explicit Key(gsl::span<const Key> idxVar) : mData(std::vector<Key>(idxVar.begin(), idxVar.end())) {}
 
   explicit operator bool() const {
     if (mData.which() == 0)
@@ -66,7 +51,7 @@ public:
 
   bool isIndexVariable() const { return mData.which() == 2; }
 
-  IndexVariable indexVariable() const { return boost::get<IndexVariable>(mData); }
+  gsl::span<const Key> indexVariable() const { return boost::get<std::vector<Key>>(mData); }
 
 #if 0
       KeyHolder qualifiedPath(string_view subPath) const
