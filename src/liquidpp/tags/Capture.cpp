@@ -21,7 +21,7 @@ void Capture::render(Context& context, std::string& res) const
    for (auto&& node : body.nodeList)
       renderNode(context, node, varOut);
    
-   context.documentScopeContext().set(variableName.to_string(), std::move(varOut));
+   context.documentScopeContext().set(to_string(variableName), std::move(varOut));
 }
 
 }

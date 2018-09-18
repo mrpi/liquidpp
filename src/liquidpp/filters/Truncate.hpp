@@ -26,7 +26,7 @@ struct Truncate {
     if (u8EllipsLen >= maxCount)
        return ellips;
 
-    return utf8::substr(sv, 0, maxCount - ellips.size()).to_string() + ellips;
+    return to_string(utf8::substr(sv, 0, maxCount - ellips.size())) + ellips;
   }
 };
 }

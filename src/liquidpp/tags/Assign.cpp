@@ -11,15 +11,15 @@ void Assign::render(Context& context, std::string& res) const
       if (v.isRange() && v.range().usesInlineValues())
       {
          auto& vals = v.range().inlineValues();
-         context.documentScopeContext().set(variableName.to_string(), std::vector<std::string>{vals.begin(), vals.end()});
+         context.documentScopeContext().set(to_string(variableName), std::vector<std::string>{vals.begin(), vals.end()});
       }
       else
-         context.documentScopeContext().setLink(variableName.to_string(), boost::get<Path>(assignment));
+         context.documentScopeContext().setLink(to_string(variableName), boost::get<Path>(assignment));
    }
    else if (v.isStringView())
-      context.documentScopeContext().set(variableName.to_string(), v.toString());
+      context.documentScopeContext().set(to_string(variableName), v.toString());
    else
-      context.documentScopeContext().setLiquidValue(variableName.to_string(), v);
+      context.documentScopeContext().setLiquidValue(to_string(variableName), v);
 }
 
 }

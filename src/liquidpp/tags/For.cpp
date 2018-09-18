@@ -213,11 +213,11 @@ bool For::renderElement(Context &context, std::string &res,
   loopVarContext.set("forloop", forLoop);
 
   if (currentVal.isStringView())
-    loopVarContext.set(loopVariable.to_string(), currentVal.toString());
+    loopVarContext.set(to_string(loopVariable), currentVal.toString());
   else if (currentVal.isSimpleValue())
-    loopVarContext.setLiquidValue(loopVariable.to_string(), currentVal);
+    loopVarContext.setLiquidValue(to_string(loopVariable), currentVal);
   else if (currentVal != ValueTag::OutOfRange)
-    loopVarContext.setLink(loopVariable.to_string(), idxPath);
+    loopVarContext.setLink(to_string(loopVariable), idxPath);
   else
     return false;
 

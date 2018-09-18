@@ -17,7 +17,7 @@ struct Rstrip
       auto sv = *val;
       auto pos = sv.find_last_not_of(" \t\r\n");
       if (pos != std::string::npos)
-         return sv.substr(0, pos+1).to_string();
+         return to_string(sv.substr(0, pos+1));
 
       return Value::reference(string_view{});
    }

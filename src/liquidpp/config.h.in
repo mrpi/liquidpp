@@ -1,6 +1,7 @@
 #pragma once
 
 #include <vector>
+#include <string>
 
 #include @LIQUIDPP_STRING_VIEW_HEADER@
 
@@ -25,6 +26,12 @@ namespace liquidpp
    template<typename T, size_t S>
    using SmallVector = std::vector<T>;
 #endif
+   
+   // std::string_view has no member to_string and the others can not be converted implicitly
+   inline std::string to_string(string_view sv)
+   {
+      return std::string{sv.data(), sv.size()};
+   }
    
    namespace literals
    {

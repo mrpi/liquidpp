@@ -4,6 +4,11 @@ project(liquidpp)
 if(EXISTS "${CMAKE_BINARY_DIR}/conanbuildinfo.cmake")
   include(${CMAKE_BINARY_DIR}/conanbuildinfo.cmake)
   conan_basic_setup()
+else()
+  set(CMAKE_CXX_STANDARD 14)
+  set(CMAKE_CXX_STANDARD_REQUIRED on)
+
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14")
 endif()
 
 INCLUDE(CheckIncludeFileCXX)
@@ -16,11 +21,6 @@ include_directories(${Boost_INCLUDE_DIRS})
 if (PROTOBUF_FOUND)
    set(LIQUIDPP_HAVE_PROTOBUF PROTOBUF_FOUND)
 endif (PROTOBUF_FOUND)
-    
-set(CMAKE_CXX_STANDARD 14)
-set(CMAKE_CXX_STANDARD_REQUIRED on)
-
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14")
 
 if(MSVC)
    # We just need the boost::date_time heades not the lib

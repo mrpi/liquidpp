@@ -25,7 +25,7 @@ struct Strip
       if (pos != std::string::npos)
          sv.remove_suffix(sv.size()-pos-1);
 
-      return sv.to_string();
+      return to_string(sv);
    }
 };
 

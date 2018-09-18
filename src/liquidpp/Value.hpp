@@ -240,7 +240,7 @@ public:
       oss << std::setprecision(16) << boost::get<double>(data);
       return oss.str();
     } else
-      return (**this).to_string();
+      return to_string((**this));
   }
 
   string_view operator*() const {

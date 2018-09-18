@@ -11,11 +11,11 @@ struct Accessor<boost::property_tree::ptree> : public std::true_type {
 
    while (const auto key = popKey(path)) {
       if (key.isName()) {
-         auto child = propTree.get_child_optional(key.name().to_string());
+         auto child = propTree.get_child_optional(to_string(key.name()));
          if (!child) {
          if (path.empty()) {
             auto res = parent.template get_optional<std::string>(
-               key.name().to_string());
+               to_string(key.name()));
             if (res)
                return *res;
          }

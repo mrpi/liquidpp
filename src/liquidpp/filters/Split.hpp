@@ -30,7 +30,7 @@ struct Split
             auto ch = utf8::popU8Char(sv);
             if (ch.empty())
                break;
-            r.push_back(ch.to_string());
+            r.push_back(to_string(ch));
          }
       }
       else
@@ -40,12 +40,12 @@ struct Split
             auto pos = sv.find(separator);
             if (pos == std::string::npos)
             {
-               r.push_back(sv.to_string());
+               r.push_back(to_string(sv));
                sv = string_view{};
                break;
             }
 
-            r.push_back(sv.substr(0, pos).to_string());
+            r.push_back(to_string(sv.substr(0, pos)));
             sv.remove_prefix(pos + separator.size());
          }
       }

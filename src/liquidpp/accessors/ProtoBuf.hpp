@@ -70,7 +70,7 @@ template <> struct Accessor<google::protobuf::Message> : public std::true_type {
       return ValueTag::Object;
 
     auto desc = msg.GetDescriptor();
-    auto field = desc->FindFieldByName(key.name().to_string());
+    auto field = desc->FindFieldByName(to_string(key.name()));
     if (!field)
       return ValueTag::Null;
 
