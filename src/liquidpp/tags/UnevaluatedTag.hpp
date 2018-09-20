@@ -23,8 +23,8 @@ struct UnevaluatedTag : public Tag {
       name = tokens[0];
       if (tokens.size() > 1)
       {
-         const char* start = &tokens[1].front();
-         const char* end = &*tokens.back().end();
+         const char* start = tokens[1].data();
+         const char* end = tokens.back().data() + tokens.back().size();
          size_t len = end - start;
          value = string_view{start, len};
       }
